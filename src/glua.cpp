@@ -11,3 +11,11 @@ bool runscript(lstate L, const str &fname)
   }
   return ok;
 }
+
+Value::~Value()
+{
+  if (vtype == valuetypes::component)
+  {
+    delete component;
+  }
+}
