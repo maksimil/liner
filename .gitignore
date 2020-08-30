@@ -1,0 +1,9 @@
+# vscode
+/.vscode
+
+# builds
+/debug
+/release
+
+# test lua scripts
+/scripts
