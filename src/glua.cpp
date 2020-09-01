@@ -1,6 +1,13 @@
 #include "glua.h"
 #include <iostream>
 
+lstate newstate()
+{
+  lstate L = luaL_newstate();
+  luaL_openlibs(L);
+  return L;
+}
+
 bool runscript(lstate L, const std::string &fname)
 {
   bool ok = luaL_dofile(L, fname.c_str()) == LUA_OK;

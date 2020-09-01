@@ -4,12 +4,12 @@ void runtask(const Value *value, const std::string *fname,
              const std::string *function, std::mutex *mutex,
              std::vector<Value> *vs)
 {
-  lstate L = luaL_newstate();
+  lstate L = newstate();
   if (runscript(L, *fname))
   {
     lua_getglobal(L, function->c_str());
     pushvalue(L, *value);
-    if (!pcall(L, 0, 1))
+    if (!pcall(L, 1, 1))
     {
       std::lock_guard<std::mutex> lk(*mutex);
       vs->emplace_back(0);

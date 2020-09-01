@@ -37,6 +37,8 @@ struct Value
   const Component *component() const;
 };
 
+lstate newstate();
+
 // run lua script
 bool runscript(lstate L, const std::string &fname);
 
