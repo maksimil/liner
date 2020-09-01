@@ -3,8 +3,7 @@
 
 bool runscript(lstate L, const std::string &fname)
 {
-  int r = luaL_dofile(L, fname.c_str());
-  bool ok = r == LUA_OK;
+  bool ok = luaL_dofile(L, fname.c_str()) == LUA_OK;
   if (!ok)
   {
     std::cout << lua_tostring(L, -1) << "\n";
@@ -132,4 +131,14 @@ std::ostream &operator<<(std::ostream &cout, const Value &value)
 {
   printvalue(cout, value);
   return cout;
+}
+
+bool pcall(lstate L, const int &inargs, const int &outargs)
+{
+  bool ok = lua_pcall(L, inargs, outargs, 0) == LUA_OK;
+  if (!ok)
+  {
+    std::cout << lua_tostring(L, -1) << "\n";
+  }
+  return ok;
 }
