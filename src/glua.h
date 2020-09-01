@@ -47,6 +47,10 @@ void pushvalue(lstate L, const Value &value);
 Value loadvalue(lstate L, const std::string &gname);
 Value loadvalue(lstate L);
 
+Value instantiate(lstate L, const std::string &gname);
+Value instantiate(lstate L);
+Value instantiate(const Value &shape);
+
 std::ostream &operator<<(std::ostream &cout, const Value &value);
 
 std::vector<Value> runscript(const std::vector<Value> &values,
