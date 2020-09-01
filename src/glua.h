@@ -1,42 +1,32 @@
 #include <lua.hpp>
 #include <map>
 #include <string>
+#include <variant>
 
-#define str       std::string
 #define lstate    lua_State *
-#define Component std::map<str, Value>
+#define Component std::map<std::string, Value>
 
-// run lua script
-bool runscript(lstate L, const str &fname);
-
-enum valuetypes
+enum valuetype
 {
-  st,
+  str,
   num,
-  comp,
+  comp
 };
 
 struct Value
 {
-  Value();
-  Value(const valuetypes &t);
-
-  Value(const str &v);
-  Value(const double &v);
-
+  Value(const valuetype &_type);
   Value(const Value &value);
 
-  Value operator=(const Value &v);
+  Value(const double &num);
+  Value(const std::string &str);
 
-  valuetypes vtype;
-  union {
-    str string;
-    double number;
-    Component *component;
-  };
-
-  ~Value();
+  valuetype type;
+  std::variant<double, std::string, Component *> vl;
 };
 
-Value loadvalue(lstate L, const str &gname);
+// run lua script
+bool runscript(lstate L, const std::string &fname);
+
+Value loadvalue(lstate L, const std::string &gname);
 Value loadvalue(lstate L);
