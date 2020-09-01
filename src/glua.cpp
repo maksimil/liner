@@ -37,7 +37,7 @@ Value::Value(const Value &value) : type(value.type)
     break;
   case comp:
     vl = new Component;
-    *getcomp(vl) = *getcomp(value.vl);
+    *component() = *value.component();
     break;
   }
 }
@@ -50,6 +50,36 @@ Value::Value(const double &number) : type(num)
 Value::Value(const std::string &string) : type(str)
 {
   vl = string;
+}
+
+double &Value::number()
+{
+  return std::get<double>(vl);
+}
+
+const double &Value::number() const
+{
+  return std::get<double>(vl);
+}
+
+std::string &Value::string()
+{
+  return std::get<std::string>(vl);
+}
+
+const std::string &Value::string() const
+{
+  return std::get<std::string>(vl);
+}
+
+Component *&Value::component()
+{
+  return std::get<Component *>(vl);
+}
+
+const Component *Value::component() const
+{
+  return std::get<Component *>(vl);
 }
 
 Value loadvalue(lstate L, const std::string &str)
@@ -94,7 +124,7 @@ Value loadvalue(lstate L)
     {
       const std::string key = lua_tostring(L, -2);
       const Value value = loadvalue(L);
-      getcomp(res.vl)->insert(std::pair{key, value});
+      res.component()->insert(std::pair{key, value});
       lua_pop(L, 1);
     }
     break;
@@ -108,13 +138,13 @@ void printvalue(std::ostream &cout, const Value &value,
   switch (value.type)
   {
   case str:
-    cout << "\"" << getstr(value.vl) << "\"";
+    cout << "\"" << value.string() << "\"";
     break;
   case num:
-    cout << getnum(value.vl);
+    cout << value.number();
     break;
   case comp:
-    const Component &component = *getcomp(value.vl);
+    const Component &component = *value.component();
     const std::string newindent = indent + "  ";
     cout << "{\n";
     for (auto &&pair : component)

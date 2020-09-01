@@ -9,10 +9,6 @@
 #define lstate    lua_State *
 #define Component std::map<std::string, Value>
 
-#define getstr  std::get<std::string>
-#define getnum  std::get<double>
-#define getcomp std::get<Component *>
-
 enum valuetype
 {
   str,
@@ -30,6 +26,15 @@ struct Value
 
   valuetype type;
   std::variant<double, std::string, Component *> vl;
+
+  double &number();
+  const double &number() const;
+
+  std::string &string();
+  const std::string &string() const;
+
+  Component *&component();
+  const Component *component() const;
 };
 
 // run lua script
