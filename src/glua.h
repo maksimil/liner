@@ -1,3 +1,4 @@
+#include <iostream>
 #include <lua.hpp>
 #include <map>
 #include <string>
@@ -5,6 +6,10 @@
 
 #define lstate    lua_State *
 #define Component std::map<std::string, Value>
+
+#define getstr  std::get<std::string>
+#define getnum  std::get<double>
+#define getcomp std::get<Component *>
 
 enum valuetype
 {
@@ -30,3 +35,5 @@ bool runscript(lstate L, const std::string &fname);
 
 Value loadvalue(lstate L, const std::string &gname);
 Value loadvalue(lstate L);
+
+std::ostream &operator<<(std::ostream &cout, const Value &value);

@@ -38,7 +38,7 @@ Value::Value(const Value &value) : type(value.type)
     break;
   case comp:
     vl = new Component;
-    *std::get<Component *>(vl) = *std::get<Component *>(value.vl);
+    *getcomp(vl) = *getcomp(value.vl);
     break;
   }
 }
@@ -63,11 +63,18 @@ Value loadvalue(lstate L, const std::string &str)
 
 valuetype gettype(lstate L)
 {
-  if (lua_istable(L, -1))
-    return comp;
-  if (lua_isstring(L, -1))
+  switch (lua_type(L, -1))
+  {
+  case LUA_TSTRING:
     return str;
-  // if (lua_isnumber(L, -1))
+    break;
+  case LUA_TNUMBER:
+    return num;
+    break;
+  case LUA_TTABLE:
+    return comp;
+    break;
+  }
   return num;
 }
 
@@ -88,10 +95,41 @@ Value loadvalue(lstate L)
     {
       const std::string key = lua_tostring(L, -2);
       const Value value = loadvalue(L);
-      std::get<Component *>(res.vl)->insert(std::pair{key, value});
+      getcomp(res.vl)->insert(std::pair{key, value});
       lua_pop(L, 1);
     }
     break;
   }
   return res;
+}
+
+void printvalue(std::ostream &cout, const Value &value,
+                const std::string &indent = "")
+{
+  switch (value.type)
+  {
+  case str:
+    cout << "\"" << getstr(value.vl) << "\"";
+    break;
+  case num:
+    cout << getnum(value.vl);
+    break;
+  case comp:
+    const Component &component = *getcomp(value.vl);
+    const std::string newindent = indent + "  ";
+    cout << "{\n";
+    for (auto &&pair : component)
+    {
+      cout << newindent << pair.first << ": ";
+      printvalue(cout, pair.second, newindent);
+      cout << ",\n";
+    }
+    cout << indent << "}";
+  }
+};
+
+std::ostream &operator<<(std::ostream &cout, const Value &value)
+{
+  printvalue(cout, value);
+  return cout;
 }
