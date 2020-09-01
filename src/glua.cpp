@@ -82,6 +82,28 @@ const Component *Value::component() const
   return std::get<Component *>(vl);
 }
 
+void pushvalue(lstate L, const Value &value)
+{
+  switch (value.type)
+  {
+  case num:
+    lua_pushnumber(L, value.number());
+    break;
+  case str:
+    lua_pushstring(L, value.string().c_str());
+    break;
+  case comp:
+    lua_newtable(L);
+    for (auto &pair : *value.component())
+    {
+      lua_pushstring(L, pair.first.c_str());
+      pushvalue(L, pair.second);
+      lua_settable(L, -3);
+    }
+    break;
+  }
+}
+
 Value loadvalue(lstate L, const std::string &str)
 {
   lua_getglobal(L, str.c_str());
@@ -147,7 +169,7 @@ void printvalue(std::ostream &cout, const Value &value,
     const Component &component = *value.component();
     const std::string newindent = indent + "  ";
     cout << "{\n";
-    for (auto &&pair : component)
+    for (auto &pair : component)
     {
       cout << newindent << pair.first << ": ";
       printvalue(cout, pair.second, newindent);

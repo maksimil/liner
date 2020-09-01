@@ -40,6 +40,8 @@ struct Value
 // run lua script
 bool runscript(lstate L, const std::string &fname);
 
+void pushvalue(lstate L, const Value &value);
+
 Value loadvalue(lstate L, const std::string &gname);
 Value loadvalue(lstate L);
 
