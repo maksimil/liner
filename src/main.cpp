@@ -1,3 +1,4 @@
+#include "glua.h"
 #include "time.h"
 #include <fstream>
 #include <iostream>
@@ -6,11 +7,23 @@
 void runmain()
 {
   // read
-  // nothing, lul
+  lstate L = newstate();
+
+  CHECKRUN(L, "config.lua");
+
+  const Value settings = loadvalue(L, "settings");
+  const Value shape = loadvalue(L, "shape");
+  const Value update = loadvalue(L, "update");
+
+  CHECKRUN(L, shape["path"].string());
+  Value state = instantiate(L, shape["vname"].string());
+
+  CHECKRUN(L, update["path"].string());
+  const std::string updatename = update["vname"].string();
 
   // run
   bool running = true;
-  const MSTYPE period = MSTYPE(period);
+  const MSTYPE period = MSTYPE((int) settings["delta"].number());
   auto lastupdate = NOW;
 
   while (running)
@@ -23,9 +36,17 @@ void runmain()
     }
     lastupdate = NOW;
 
-    std::cout << "running"
-              << "\n";
+    lua_getglobal(L, updatename.c_str());
+    pushvalue(L, state);
+    if (!pcall(L, 1, 1))
+    {
+      lua_close(L);
+      return;
+    }
+    state = loadvalue(L);
+    lua_pop(L, 1);
   }
+  lua_close(L);
 }
 
 int main(int argc, char const *argv[])
@@ -40,7 +61,7 @@ int main(int argc, char const *argv[])
     {
       std::ofstream config("config.lua");
       config << "settings = {\n";
-      config << "    tick_period = 100\n";
+      config << "    delta = 100\n";
       config << "}\n";
       config << "\n";
       config << "shape = {\n";
@@ -48,7 +69,7 @@ int main(int argc, char const *argv[])
       config << "    vname = \"shape\"\n";
       config << "}\n";
       config << "\n";
-      config << "updater = {\n";
+      config << "update = {\n";
       config << "    path = \"f.lua\",\n";
       config << "    vname = \"upd\"\n";
       config << "}\n";

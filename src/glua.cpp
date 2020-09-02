@@ -59,6 +59,16 @@ Value::Value(const std::string &string) : type(str)
   vl = string;
 }
 
+Value &Value::operator[](const std::string &key)
+{
+  return component()->at(key);
+}
+
+const Value &Value::operator[](const std::string &key) const
+{
+  return component()->at(key);
+}
+
 double &Value::number()
 {
   return std::get<double>(vl);

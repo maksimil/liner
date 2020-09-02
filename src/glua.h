@@ -9,6 +9,13 @@
 #define lstate    lua_State *
 #define Component std::map<std::string, Value>
 
+#define CHECKRUN(L, name)                                                      \
+  if (!runscript(L, name))                                                     \
+  {                                                                            \
+    lua_close(L);                                                              \
+    return;                                                                    \
+  }
+
 enum valuetype
 {
   str,
@@ -26,6 +33,9 @@ struct Value
 
   valuetype type;
   std::variant<double, std::string, Component *> vl;
+
+  Value &operator[](const std::string &key);
+  const Value &operator[](const std::string &key) const;
 
   double &number();
   const double &number() const;
