@@ -14,12 +14,24 @@ void runmain()
   const Value settings = loadvalue(L, "settings");
   const Value shape = loadvalue(L, "shape");
   const Value update = loadvalue(L, "update");
+  const Value init = loadvalue(L, "init");
 
   CHECKRUN(L, shape["path"].string());
   Value state = instantiate(L, shape["vname"].string());
 
   CHECKRUN(L, update["path"].string());
   const std::string updatename = update["vname"].string();
+
+  CHECKRUN(L, init["path"].string());
+  lua_getglobal(L, init["vname"].string().c_str());
+  pushvalue(L, state);
+  if (!pcall(L, 1, 1))
+  {
+    lua_close(L);
+    return;
+  }
+  state = loadvalue(L);
+  lua_pop(L, 1);
 
   // run
   bool running = true;
@@ -62,24 +74,30 @@ int main(int argc, char const *argv[])
       std::ofstream config("config.lua");
       config << "settings = {\n";
       config << "    delta = 100\n";
-      config << "}\n";
-      config << "\n";
+      config << "}\n\n";
       config << "shape = {\n";
       config << "    path = \"f.lua\",\n";
       config << "    vname = \"shape\"\n";
-      config << "}\n";
-      config << "\n";
+      config << "}\n\n";
       config << "update = {\n";
       config << "    path = \"f.lua\",\n";
-      config << "    vname = \"upd\"\n";
+      config << "    vname = \"update\"\n";
+      config << "}\n\n";
+      config << "init = {\n";
+      config << "    path = \"f.lua\",\n";
+      config << "    vname = \"init\"\n";
       config << "}\n";
       config.close();
 
       std::ofstream f("f.lua");
-      f << "shape = {}\n";
-      f << "\n";
-      f << "upd = function(obj)\n";
+      f << "shape = {}\n\n";
+      f << "init = function(obj)\n";
+      f << "    print(\"init\")\n";
+      f << "    return obj\n";
+      f << "end\n\n";
+      f << "update = function(obj)\n";
       f << "    print(\"HW\")\n";
+      f << "    return obj\n";
       f << "end\n";
       f.close();
     }
