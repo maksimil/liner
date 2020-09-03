@@ -68,3 +68,5 @@ std::vector<Value> runscript(const std::vector<Value> &values,
                              const std::string &function);
 
 bool pcall(lstate L, const int &inargs, const int &outargs);
+
+bool hasoption(const Value &value, const std::string &option);

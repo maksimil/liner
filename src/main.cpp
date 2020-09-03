@@ -1,4 +1,5 @@
 #include "glua.h"
+#include "profiler.h"
 #include "time.h"
 #include <fstream>
 #include <iostream>
@@ -11,13 +12,22 @@ void runmain()
 
   CHECKRUN(L, "config.lua");
 
+  // settings
   const Value settings = loadvalue(L, "settings");
+  // profiler
+  Profiler &profiler = Profiler::get();
+  profiler.profiling = hasoption(settings, "profiling");
+  if (profiler.profiling)
+    profiler.begin(settings["profiling"].string().c_str());
+
   const Value shape = loadvalue(L, "shape");
   const Value update = loadvalue(L, "update");
   const Value init = loadvalue(L, "init");
 
+  TSCOPE(initialize);
   CHECKRUN(L, shape["path"].string());
   Value state = instantiate(L, shape["vname"].string());
+  initialize.stop();
 
   CHECKRUN(L, update["path"].string());
   const std::string updatename = update["vname"].string();
@@ -48,6 +58,8 @@ void runmain()
     }
     lastupdate = NOW;
 
+    TSCOPE(update);
+
     lua_getglobal(L, updatename.c_str());
     pushvalue(L, state);
     if (!pcall(L, 1, 1))
@@ -57,8 +69,12 @@ void runmain()
     }
     state = loadvalue(L);
     lua_pop(L, 1);
+
+    update.stop();
   }
   lua_close(L);
+
+  profiler.end();
 }
 
 int main(int argc, char const *argv[])
@@ -74,6 +90,7 @@ int main(int argc, char const *argv[])
       std::ofstream config("config.lua");
       config << "settings = {\n";
       config << "    delta = 100\n";
+      config << "    profiling = \"profiler.json\"\n";
       config << "}\n\n";
       config << "shape = {\n";
       config << "    path = \"f.lua\",\n";

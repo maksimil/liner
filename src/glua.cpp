@@ -211,3 +211,8 @@ bool pcall(lstate L, const int &inargs, const int &outargs)
   }
   return ok;
 }
+
+bool hasoption(const Value &value, const std::string &option)
+{
+  return value.component()->count(option);
+}
