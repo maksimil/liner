@@ -18,16 +18,24 @@ void runmain()
   Profiler &profiler = Profiler::get();
   profiler.profiling = hasoption(settings, "profiling");
   if (profiler.profiling)
-    profiler.begin(settings["profiling"].string().c_str());
+  {
+    writemode mode = json;
+    if (hasoption(settings, "pformat"))
+    {
+      if (settings["pformat"].string() == "bin")
+        mode = bin;
+    }
+    profiler.begin(settings["profiling"].string().c_str(), mode);
+  }
 
   const Value shape = loadvalue(L, "shape");
   const Value update = loadvalue(L, "update");
   const Value init = loadvalue(L, "init");
 
-  TSCOPE(initialize);
+  TSCOPEID("initialize", 27);
   CHECKRUN(L, shape["path"].string());
   Value state = instantiate(L, shape["vname"].string());
-  initialize.stop();
+  tsc27.stop();
 
   CHECKRUN(L, update["path"].string());
   const std::string updatename = update["vname"].string();
@@ -59,7 +67,7 @@ void runmain()
     lastupdate = NOW;
 
     {
-      TSCOPE(update);
+      TSCOPE("update");
 
       lua_getglobal(L, updatename.c_str());
       pushvalue(L, state);
@@ -89,8 +97,9 @@ int main(int argc, char const *argv[])
     {
       std::ofstream config("config.lua");
       config << "settings = {\n";
-      config << "    delta = 100\n";
-      config << "    profiling = \"profiler.json\"\n";
+      config << "    delta = 100,\n";
+      config << "    profiling = \"profiler.json\",\n";
+      config << "    pformat = \"json\"\n";
       config << "}\n\n";
       config << "shape = {\n";
       config << "    path = \"f.lua\",\n";
@@ -117,6 +126,67 @@ int main(int argc, char const *argv[])
       f << "    return obj\n";
       f << "end\n";
       f.close();
+    }
+
+    if (strcmp(argv[1], "epr") == 0)
+    {
+      if (argc != 3)
+      {
+        std::cout << "Wrong number of arguments for command liner epr <file>";
+        return 1;
+      }
+      std::string fname = argv[2];
+      std::ifstream binfile(fname, std::ios::binary | std::ios::in);
+      std::ofstream jsonfile(fname + ".json", std::ios::binary | std::ios::out);
+
+      jsonfile << "{\"otherData\": {},\"traceEvents\":[";
+
+      binfile.seekg(0, std::ios::end);
+      int size = binfile.tellg();
+      binfile.seekg(0, std::ios::beg);
+
+      bool first = true;
+
+      while (size != (int) binfile.tellg())
+      {
+        if (first)
+        {
+          first = false;
+        }
+        else
+        {
+          jsonfile << ",";
+        }
+
+        int64_t duration, start;
+        uint32_t tid;
+        size_t size;
+
+        binfile.read((char *) &size, sizeof(size_t));
+        std::string name = "";
+        name.resize(size);
+        binfile.read(&name[0], size);
+        binfile.read((char *) &start, sizeof(int64_t));
+        binfile.read((char *) &duration, sizeof(int64_t));
+        binfile.read((char *) &tid, sizeof(uint32_t));
+
+        jsonfile << "{";
+        jsonfile << "\"cat\":\"function\",";
+        jsonfile << "\"dur\":" << duration << ',';
+        jsonfile << "\"name\":\"" << name << "\",";
+        jsonfile << "\"ph\":\"X\",";
+        jsonfile << "\"pid\":0,";
+        jsonfile << "\"tid\":" << tid << ",";
+        jsonfile << "\"ts\":" << start;
+        jsonfile << "}";
+
+        jsonfile.flush();
+      }
+
+      jsonfile << "]}";
+
+      jsonfile.close();
+      binfile.close();
     }
   }
   return 0;

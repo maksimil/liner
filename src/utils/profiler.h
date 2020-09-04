@@ -3,7 +3,10 @@
 #include <string>
 #include <vector>
 
-#define TSCOPE(name) TimeScope name(#name)
+#define CONCAT(a, b) a##b
+
+#define TSCOPEID(name, id) TimeScope CONCAT(tsc, id)(name)
+#define TSCOPE(name)       TSCOPEID(name, __LINE__)
 
 struct ProfileResult
 {
@@ -12,14 +15,22 @@ struct ProfileResult
   uint32_t tid;
 };
 
+enum writemode
+{
+  bin,
+  json,
+};
+
 struct Profiler
 {
   bool profiling;
 
   std::ofstream file;
   bool empty;
+  writemode mode;
 
   void begin(const char *fname);
+  void begin(const char *fname, const writemode &wmode);
   void end();
 
   void write(const ProfileResult &result);
