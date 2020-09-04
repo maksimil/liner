@@ -76,7 +76,7 @@ void TimeScope::stop()
                   .time_since_epoch()
                   .count();
     res.name = name;
-    Profiler::get().write(res);
+    profiler.write(res);
     stopped = true;
   }
 }

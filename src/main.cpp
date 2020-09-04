@@ -58,19 +58,19 @@ void runmain()
     }
     lastupdate = NOW;
 
-    TSCOPE(update);
-
-    lua_getglobal(L, updatename.c_str());
-    pushvalue(L, state);
-    if (!pcall(L, 1, 1))
     {
-      lua_close(L);
-      return;
-    }
-    state = loadvalue(L);
-    lua_pop(L, 1);
+      TSCOPE(update);
 
-    update.stop();
+      lua_getglobal(L, updatename.c_str());
+      pushvalue(L, state);
+      if (!pcall(L, 1, 1))
+      {
+        lua_close(L);
+        return;
+      }
+      state = loadvalue(L);
+      lua_pop(L, 1);
+    }
   }
   lua_close(L);
 
