@@ -1,22 +1,9 @@
 #include "glua.h"
-#include <iostream>
 
-lstate newstate()
-{
-  lstate L = luaL_newstate();
-  luaL_openlibs(L);
-  return L;
-}
+#define NUMBER "number"
+#define STRING "string"
 
-bool runscript(lstate L, const std::string &fname)
-{
-  bool ok = luaL_dofile(L, fname.c_str()) == LUA_OK;
-  if (!ok)
-  {
-    std::cout << lua_tostring(L, -1) << "\n";
-  }
-  return ok;
-}
+// Value struct functions
 
 Value::Value(const valuetype &_type) : type(_type)
 {
@@ -98,6 +85,8 @@ const Component *Value::component() const
 {
   return std::get<Component *>(vl);
 }
+
+// Value functions
 
 void pushvalue(lstate L, const Value &value)
 {
@@ -202,17 +191,49 @@ std::ostream &operator<<(std::ostream &cout, const Value &value)
   return cout;
 }
 
-bool pcall(lstate L, const int &inargs, const int &outargs)
-{
-  bool ok = lua_pcall(L, inargs, outargs, 0) == LUA_OK;
-  if (!ok)
-  {
-    std::cout << lua_tostring(L, -1) << "\n";
-  }
-  return ok;
-}
-
 bool hasoption(const Value &value, const std::string &option)
 {
   return value.component()->count(option);
+}
+
+Value instantiate(lstate L, const std::string &gname)
+{
+  lua_getglobal(L, gname.c_str());
+  const Value res = instantiate(L);
+  lua_pop(L, 1);
+  return res;
+}
+
+Value instantiate(lstate L)
+{
+  return instantiate(loadvalue(L));
+}
+
+Value instantiate(const Value &shape)
+{
+  switch (shape.type)
+  {
+  case str:
+  {
+    const std::string key = shape.string();
+    if (key == NUMBER)
+      return 0;
+    if (key == STRING)
+      return "";
+    break;
+  }
+
+  case comp:
+  {
+    Value res(comp);
+    Component *component = res.component();
+    for (auto &pair : *shape.component())
+    {
+      component->insert({pair.first, instantiate(pair.second)});
+    }
+    return res;
+    break;
+  }
+  }
+  return 0;
 }

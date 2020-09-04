@@ -1,6 +1,6 @@
-#include "glua.h"
-#include "profiler.h"
-#include "time.h"
+#include "glua/glua.h"
+#include "utils/profiler.h"
+#include "utils/time.h"
 #include <fstream>
 #include <iostream>
 #include <thread>
