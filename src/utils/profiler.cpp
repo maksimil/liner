@@ -26,16 +26,19 @@ void Profiler::end()
   file.close();
 }
 
+#define COMMATHINGEY(vname)                                                    \
+  if (vname)                                                                   \
+  {                                                                            \
+    vname = false;                                                             \
+  }                                                                            \
+  else                                                                         \
+  {                                                                            \
+    file << ",";                                                               \
+  }
+
 void Profiler::log(const char *log)
 {
-  if (empty)
-  {
-    empty = false;
-  }
-  else
-  {
-    file << ",";
-  }
+  COMMATHINGEY(empty)
 
   file << "{";
   file << "\"cat\":\"log\",";
@@ -53,16 +56,38 @@ void Profiler::log(const char *log)
   file.flush();
 }
 
+void Profiler::log(const char *name, const Value &args)
+{
+  COMMATHINGEY(empty)
+
+  file << "{";
+  file << "\"cat\":\"log\",";
+  file << "\"name\":\"" << name << "\",";
+  file << "\"ph\":\"C\",";
+  file << "\"pid\":0,";
+  file << "\"tid\":" << std::hash<std::thread::id>{}(std::this_thread::get_id())
+       << ",";
+  file << "\"ts\":"
+       << std::chrono::time_point_cast<std::chrono::microseconds>(NOW)
+              .time_since_epoch()
+              .count()
+       << ",";
+  file << "\"args\":{";
+
+  const Component &argsmap = *args.component();
+  bool nfirst = true;
+  for (auto &pair : argsmap)
+  {
+    COMMATHINGEY(nfirst)
+    file << "\"" << pair.first << "\":\"" << pair.second.tostring() << "\"";
+  }
+
+  file << "}}";
+}
+
 void Profiler::write(const ProfileResult &res)
 {
-  if (empty)
-  {
-    empty = false;
-  }
-  else
-  {
-    file << ",";
-  }
+  COMMATHINGEY(empty)
 
   file << "{";
   file << "\"cat\":\"function\",";

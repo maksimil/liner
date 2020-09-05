@@ -1,3 +1,5 @@
+#pragma once
+
 #include <future>
 #include <iostream>
 #include <lua.hpp>
@@ -42,6 +44,7 @@ struct Value
 
   std::string &string();
   const std::string &string() const;
+  std::string tostring() const;
 
   Component *&component();
   const Component *component() const;

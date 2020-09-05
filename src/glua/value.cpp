@@ -86,6 +86,23 @@ const Component *Value::component() const
   return std::get<Component *>(vl);
 }
 
+std::string Value::tostring() const
+{
+  switch (type)
+  {
+  case num:
+    return std::to_string(number());
+    break;
+  case str:
+    return string();
+    break;
+  case comp:
+    return "object";
+    break;
+  }
+  return "";
+}
+
 // Value functions
 
 void pushvalue(lstate L, const Value &value)

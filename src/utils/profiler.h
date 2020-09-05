@@ -1,3 +1,6 @@
+#pragma once
+
+#include "../glua/glua.h"
 #include <fstream>
 #include <future>
 #include <string>
@@ -26,7 +29,7 @@ struct Profiler
   void end();
 
   void log(const char *message);
-
+  void log(const char *name, const Value &args);
   void write(const ProfileResult &result);
 
   static Profiler &get();

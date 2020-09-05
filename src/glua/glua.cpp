@@ -6,11 +6,20 @@ lstate newstate()
 {
   lstate L = luaL_newstate();
   luaL_openlibs(L);
+
   lua_register(L, "log_event", [](lstate Lf) -> int {
     const char *message = lua_tostring(Lf, 1);
     Profiler::get().log(message);
     return 0;
   });
+
+  lua_register(L, "log_value", [](lstate Lf) -> int {
+    const char *name = lua_tostring(Lf, 1);
+    const Value &args = loadvalue(Lf);
+    Profiler::get().log(name, args);
+    return 0;
+  });
+
   return L;
 }
 

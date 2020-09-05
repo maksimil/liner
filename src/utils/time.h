@@ -1,3 +1,5 @@
+#pragma once
+
 #include <chrono>
 
 #define NOW    std::chrono::high_resolution_clock::now()
