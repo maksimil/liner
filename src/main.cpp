@@ -34,7 +34,7 @@ void runmain()
   tsc27.stop();
 
   CHECKRUN(L, update["path"].string());
-  const std::string updatename = update["vname"].string();
+  const std::string& updatename = update["vname"].string();
 
   CHECKRUN(L, init["path"].string());
   lua_getglobal(L, init["vname"].string().c_str());

@@ -26,6 +26,33 @@ void Profiler::end()
   file.close();
 }
 
+void Profiler::log(const char *log)
+{
+  if (empty)
+  {
+    empty = false;
+  }
+  else
+  {
+    file << ",";
+  }
+
+  file << "{";
+  file << "\"cat\":\"log\",";
+  file << "\"name\":\"" << log << "\",";
+  file << "\"ph\":\"I\",";
+  file << "\"pid\":0,";
+  file << "\"tid\":" << std::hash<std::thread::id>{}(std::this_thread::get_id())
+       << ",";
+  file << "\"ts\":"
+       << std::chrono::time_point_cast<std::chrono::microseconds>(NOW)
+              .time_since_epoch()
+              .count();
+  file << "}";
+
+  file.flush();
+}
+
 void Profiler::write(const ProfileResult &res)
 {
   if (empty)

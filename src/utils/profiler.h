@@ -25,6 +25,8 @@ struct Profiler
   void begin(const char *fname);
   void end();
 
+  void log(const char *message);
+
   void write(const ProfileResult &result);
 
   static Profiler &get();
