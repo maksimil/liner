@@ -24,20 +24,20 @@ void runmain()
       profiler.begin(fname.c_str());
   }
 
-  const Value shape = load<Value>(L, "shape");
-  const Value update = load<Value>(L, "update");
-  const Value init = load<Value>(L, "init");
+  const ValueRef shape = load<ValueRef>(L, "shape");
+  const ValueRef update = load<ValueRef>(L, "update");
+  const ValueRef init = load<ValueRef>(L, "init");
 
   TSCOPEID("initialize", 27);
-  CHECKRUN(L, shape["path"].string());
-  Value state = instantiate(L, shape["vname"].string());
+  CHECKRUN(L, shape.path);
+  Value state = instantiate(L, shape.name);
   tsc27.stop();
 
-  CHECKRUN(L, update["path"].string());
-  const std::string &updatename = update["vname"].string();
+  CHECKRUN(L, update.path);
+  const std::string &updatename = update.name;
 
-  CHECKRUN(L, init["path"].string());
-  lua_getglobal(L, init["vname"].string().c_str());
+  CHECKRUN(L, init.path);
+  lua_getglobal(L, init.name.c_str());
   pushvalue(L, state);
   if (!pcall(L, 1, 1))
   {
@@ -98,15 +98,15 @@ int main(int argc, char const *argv[])
       config << "}\n\n";
       config << "shape = {\n";
       config << "    path = \"f.lua\",\n";
-      config << "    vname = \"shape\"\n";
+      config << "    name = \"shape\"\n";
       config << "}\n\n";
       config << "update = {\n";
       config << "    path = \"f.lua\",\n";
-      config << "    vname = \"update\"\n";
+      config << "    name = \"update\"\n";
       config << "}\n\n";
       config << "init = {\n";
       config << "    path = \"f.lua\",\n";
-      config << "    vname = \"init\"\n";
+      config << "    name = \"init\"\n";
       config << "}\n";
       config.close();
 

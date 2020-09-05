@@ -27,8 +27,8 @@ enum valuetype
 
 struct ValueRef
 {
-  const char *file;
-  const char *name;
+  std::string path;
+  std::string name;
 };
 
 struct Value
@@ -66,15 +66,16 @@ void pushvalue(lstate L, const Value &value);
 #define LOADDEF(Tn)                                                            \
   template <> Tn load<Tn>(const ValueRef &ref);                                \
   template <> Tn load<Tn>(lstate L, const ValueRef &ref);                      \
-  template <> Tn load<Tn>(lstate L, const char *gname);                        \
+  template <> Tn load<Tn>(lstate L, const std::string &gname);                 \
   template <> Tn load<Tn>(lstate L);
 
 template <typename T> T load(const ValueRef &ref);
 template <typename T> T load(lstate L, const ValueRef &ref);
-template <typename T> T load(lstate L, const char *gname);
+template <typename T> T load(lstate L, const std::string &gname);
 template <typename T> T load(lstate L);
 
 LOADDEF(Value)
+LOADDEF(ValueRef)
 
 Value instantiate(lstate L, const std::string &gname);
 Value instantiate(lstate L);

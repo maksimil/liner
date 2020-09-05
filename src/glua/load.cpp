@@ -11,13 +11,13 @@
                                                                                \
   template <> Tn load<Tn>(lstate L, const ValueRef &ref)                       \
   {                                                                            \
-    runscript(L, ref.file);                                                    \
+    runscript(L, ref.path);                                                    \
     return load<Tn>(L, ref.name);                                              \
   }                                                                            \
                                                                                \
-  template <> Tn load<Tn>(lstate L, const char *gname)                         \
+  template <> Tn load<Tn>(lstate L, const std::string &gname)                  \
   {                                                                            \
-    lua_getglobal(L, gname);                                                   \
+    lua_getglobal(L, gname.c_str());                                           \
     return load<Tn>(L);                                                        \
   }
 
@@ -63,4 +63,22 @@ template <> Value load<Value>(lstate L)
     break;
   }
   return res;
+}
+
+IMPLEMENTLOAD(ValueRef)
+
+template <> ValueRef load<ValueRef>(lstate L)
+{
+  ValueRef ref;
+  lua_pushstring(L, "path");
+  lua_gettable(L, -2);
+  ref.path = lua_tostring(L, -1);
+  lua_pop(L, 1);
+
+  lua_pushstring(L, "name");
+  lua_gettable(L, -2);
+  ref.name = lua_tostring(L, -1);
+  lua_pop(L, 1);
+
+  return ref;
 }
