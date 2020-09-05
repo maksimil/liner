@@ -1,4 +1,5 @@
 #include "glua.h"
+#include "../utils/console.h"
 #include "../utils/profiler.h"
 #include <iostream>
 
@@ -17,6 +18,11 @@ lstate newstate()
     const char *name = lua_tostring(Lf, 1);
     const Value &args = load<Value>(Lf);
     Profiler::get().log(name, args);
+    return 0;
+  });
+
+  lua_register(L, "log_console", [](lstate Lf) -> int {
+    LOG(lua_tostring(Lf, 1));
     return 0;
   });
 
