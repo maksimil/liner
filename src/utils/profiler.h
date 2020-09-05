@@ -15,22 +15,14 @@ struct ProfileResult
   uint32_t tid;
 };
 
-enum writemode
-{
-  bin,
-  json,
-};
-
 struct Profiler
 {
   bool profiling;
 
   std::ofstream file;
   bool empty;
-  writemode mode;
 
   void begin(const char *fname);
-  void begin(const char *fname, const writemode &wmode);
   void end();
 
   void write(const ProfileResult &result);

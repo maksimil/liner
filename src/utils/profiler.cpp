@@ -10,79 +10,43 @@ Profiler &Profiler::get()
 
 void Profiler::begin(const char *fname)
 {
-  begin(fname, json);
-}
-
-void Profiler::begin(const char *fname, const writemode &wmode)
-{
   if (profiling)
   {
-    mode = wmode;
     empty = true;
 
-    if (mode == json)
-    {
-      file.open(fname);
-      file << "{\"otherData\": {},\"traceEvents\":[";
-      file.flush();
-    }
-    else if (mode == bin)
-    {
-      file.open(fname, std::ios::binary | std::ios::out);
-    }
+    file.open(fname);
+    file << "{\"otherData\":{},\"traceEvents\":[";
+    file.flush();
   }
 }
 
 void Profiler::end()
 {
-  if (profiling && mode == json)
-  {
-    file << "]}";
-  }
+  file << "]}";
   file.close();
 }
 
 void Profiler::write(const ProfileResult &res)
 {
-  switch (mode)
+  if (empty)
   {
-  case json:
+    empty = false;
+  }
+  else
   {
-    if (empty)
-    {
-      empty = false;
-    }
-    else
-    {
-      file << ",";
-    }
-
-    file << "{";
-    file << "\"cat\":\"function\",";
-    file << "\"dur\":" << (res.end - res.start) << ',';
-    file << "\"name\":\"" << res.name << "\",";
-    file << "\"ph\":\"X\",";
-    file << "\"pid\":0,";
-    file << "\"tid\":" << res.tid << ",";
-    file << "\"ts\":" << res.start;
-    file << "}";
-
-    break;
+    file << ",";
   }
-  case bin:
-  {
-    size_t size = strlen(res.name);
-    int64_t duration = res.end - res.start;
 
-    file.write((char *) &size, sizeof(size_t));
-    file.write(res.name, size);
-    file.write((char *) &res.start, sizeof(int64_t));
-    file.write((char *) &duration, sizeof(int64_t));
-    file.write((char *) &res.tid, sizeof(uint32_t));
+  file << "{";
+  file << "\"cat\":\"function\",";
+  file << "\"dur\":" << (res.end - res.start) << ',';
+  file << "\"name\":\"" << res.name << "\",";
+  file << "\"ph\":\"X\",";
+  file << "\"pid\":0,";
+  file << "\"tid\":" << res.tid << ",";
+  file << "\"ts\":" << res.start;
+  file << "}";
 
-    break;
-  }
-  }
   file.flush();
 }
 
