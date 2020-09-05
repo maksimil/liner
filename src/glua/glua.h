@@ -25,6 +25,12 @@ enum valuetype
   comp
 };
 
+struct ValueRef
+{
+  const char *file;
+  const char *name;
+};
+
 struct Value
 {
   Value(const valuetype &_type);
@@ -57,8 +63,18 @@ bool runscript(lstate L, const std::string &fname);
 
 void pushvalue(lstate L, const Value &value);
 
-Value loadvalue(lstate L, const std::string &gname);
-Value loadvalue(lstate L);
+#define LOADDEF(Tn)                                                            \
+  template <> Tn load<Tn>(const ValueRef &ref);                                \
+  template <> Tn load<Tn>(lstate L, const ValueRef &ref);                      \
+  template <> Tn load<Tn>(lstate L, const char *gname);                        \
+  template <> Tn load<Tn>(lstate L);
+
+template <typename T> T load(const ValueRef &ref);
+template <typename T> T load(lstate L, const ValueRef &ref);
+template <typename T> T load(lstate L, const char *gname);
+template <typename T> T load(lstate L);
+
+LOADDEF(Value)
 
 Value instantiate(lstate L, const std::string &gname);
 Value instantiate(lstate L);

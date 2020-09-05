@@ -127,56 +127,6 @@ void pushvalue(lstate L, const Value &value)
   }
 }
 
-Value loadvalue(lstate L, const std::string &str)
-{
-  lua_getglobal(L, str.c_str());
-  const Value res = loadvalue(L);
-  lua_pop(L, 1);
-  return res;
-}
-
-valuetype gettype(lstate L)
-{
-  switch (lua_type(L, -1))
-  {
-  case LUA_TSTRING:
-    return str;
-    break;
-  case LUA_TNUMBER:
-    return num;
-    break;
-  case LUA_TTABLE:
-    return comp;
-    break;
-  }
-  return num;
-}
-
-Value loadvalue(lstate L)
-{
-  Value res(gettype(L));
-  switch (res.type)
-  {
-  case num:
-    res.vl = lua_tonumber(L, -1);
-    break;
-  case str:
-    res.vl = lua_tostring(L, -1);
-    break;
-  case comp:
-    lua_pushnil(L);
-    while (lua_next(L, -2) != 0)
-    {
-      const std::string key = lua_tostring(L, -2);
-      const Value value = loadvalue(L);
-      res.component()->insert(std::pair{key, value});
-      lua_pop(L, 1);
-    }
-    break;
-  }
-  return res;
-}
-
 void printvalue(std::ostream &cout, const Value &value,
                 const std::string &indent = "")
 {
@@ -223,7 +173,7 @@ Value instantiate(lstate L, const std::string &gname)
 
 Value instantiate(lstate L)
 {
-  return instantiate(loadvalue(L));
+  return instantiate(load<Value>(L));
 }
 
 Value instantiate(const Value &shape)

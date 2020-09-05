@@ -15,7 +15,7 @@ void runtask(const Value *value, const std::string *fname,
       vs->emplace_back(0);
       return;
     }
-    Value v = loadvalue(L);
+    Value v = load<Value>(L);
     std::lock_guard<std::mutex> lk(*mutex);
     vs->emplace_back(v);
   }

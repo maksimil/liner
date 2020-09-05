@@ -13,7 +13,7 @@ void runmain()
   CHECKRUN(L, "config.lua");
 
   // settings
-  const Value settings = loadvalue(L, "settings");
+  const Value settings = load<Value>(L, "settings");
   // profiler
   Profiler &profiler = Profiler::get();
   profiler.profiling = hasoption(settings, "profiling");
@@ -24,9 +24,9 @@ void runmain()
       profiler.begin(fname.c_str());
   }
 
-  const Value shape = loadvalue(L, "shape");
-  const Value update = loadvalue(L, "update");
-  const Value init = loadvalue(L, "init");
+  const Value shape = load<Value>(L, "shape");
+  const Value update = load<Value>(L, "update");
+  const Value init = load<Value>(L, "init");
 
   TSCOPEID("initialize", 27);
   CHECKRUN(L, shape["path"].string());
@@ -34,7 +34,7 @@ void runmain()
   tsc27.stop();
 
   CHECKRUN(L, update["path"].string());
-  const std::string& updatename = update["vname"].string();
+  const std::string &updatename = update["vname"].string();
 
   CHECKRUN(L, init["path"].string());
   lua_getglobal(L, init["vname"].string().c_str());
@@ -44,7 +44,7 @@ void runmain()
     lua_close(L);
     return;
   }
-  state = loadvalue(L);
+  state = load<Value>(L);
   lua_pop(L, 1);
 
   // run
@@ -72,7 +72,7 @@ void runmain()
         lua_close(L);
         return;
       }
-      state = loadvalue(L);
+      state = load<Value>(L);
       lua_pop(L, 1);
     }
   }

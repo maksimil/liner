@@ -15,7 +15,7 @@ lstate newstate()
 
   lua_register(L, "log_value", [](lstate Lf) -> int {
     const char *name = lua_tostring(Lf, 1);
-    const Value &args = loadvalue(Lf);
+    const Value &args = load<Value>(Lf);
     Profiler::get().log(name, args);
     return 0;
   });
