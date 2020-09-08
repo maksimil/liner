@@ -30,7 +30,7 @@ void runmain()
 
   TSCOPEID("initialize", 27);
   CHECKRUN(L, shape.path);
-  Value state = instantiate(L, shape.name);
+  Value state = instantiate(L, shape.name.c_str());
   tsc27.stop();
 
   CHECKRUN(L, update.path);

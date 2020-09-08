@@ -12,12 +12,12 @@
   template <> Tn load<Tn>(lstate L, const ValueRef &ref)                       \
   {                                                                            \
     runscript(L, ref.path);                                                    \
-    return load<Tn>(L, ref.name);                                              \
+    return load<Tn>(L, ref.name.c_str());                                      \
   }                                                                            \
                                                                                \
-  template <> Tn load<Tn>(lstate L, const std::string &gname)                  \
+  template <> Tn load<Tn>(lstate L, const char *gname)                         \
   {                                                                            \
-    lua_getglobal(L, gname.c_str());                                           \
+    lua_getglobal(L, gname);                                                   \
     return load<Tn>(L);                                                        \
   }
 

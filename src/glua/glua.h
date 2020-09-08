@@ -60,32 +60,32 @@ lstate newstate();
 
 // run lua script
 bool runscript(lstate L, const std::string &fname);
+bool runscript(lstate L, const char *fname);
 
 void pushvalue(lstate L, const Value &value);
 
 #define LOADDEF(Tn)                                                            \
   template <> Tn load<Tn>(const ValueRef &ref);                                \
   template <> Tn load<Tn>(lstate L, const ValueRef &ref);                      \
-  template <> Tn load<Tn>(lstate L, const std::string &gname);                 \
+  template <> Tn load<Tn>(lstate L, const char *gname);                        \
   template <> Tn load<Tn>(lstate L);
 
 template <typename T> T load(const ValueRef &ref);
 template <typename T> T load(lstate L, const ValueRef &ref);
-template <typename T> T load(lstate L, const std::string &gname);
+template <typename T> T load(lstate L, const char *gname);
 template <typename T> T load(lstate L);
 
 LOADDEF(Value)
 LOADDEF(ValueRef)
 
-Value instantiate(lstate L, const std::string &gname);
+Value instantiate(lstate L, const char *gname);
 Value instantiate(lstate L);
 Value instantiate(const Value &shape);
 
 std::ostream &operator<<(std::ostream &cout, const Value &value);
 
 std::vector<Value> runscript(const std::vector<Value> &values,
-                             const std::string &fname,
-                             const std::string &function);
+                             const char *fname, const char *function);
 
 bool pcall(lstate L, const int &inargs, const int &outargs);
 

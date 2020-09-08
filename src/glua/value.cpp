@@ -163,9 +163,9 @@ bool hasoption(const Value &value, const std::string &option)
   return value.component()->count(option);
 }
 
-Value instantiate(lstate L, const std::string &gname)
+Value instantiate(lstate L, const char *gname)
 {
-  lua_getglobal(L, gname.c_str());
+  lua_getglobal(L, gname);
   const Value res = instantiate(L);
   lua_pop(L, 1);
   return res;

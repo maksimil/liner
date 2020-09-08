@@ -31,7 +31,12 @@ lstate newstate()
 
 bool runscript(lstate L, const std::string &fname)
 {
-  bool ok = luaL_dofile(L, fname.c_str()) == LUA_OK;
+  return runscript(L, fname.c_str());
+}
+
+bool runscript(lstate L, const char *fname)
+{
+  bool ok = luaL_dofile(L, fname) == LUA_OK;
   if (!ok)
   {
     std::cout << lua_tostring(L, -1) << "\n";
