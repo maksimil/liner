@@ -23,6 +23,7 @@ struct Profiler
   bool profiling;
 
   std::ofstream file;
+  std::mutex filemutex;
   bool empty;
 
   void begin(const char *fname);

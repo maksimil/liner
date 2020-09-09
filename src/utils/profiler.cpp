@@ -26,6 +26,7 @@ void Profiler::end()
   file.close();
 }
 
+#define LOCKLOGWRITE std::lock_guard lk(filemutex);
 #define COMMATHINGEY(vname)                                                    \
   if (vname)                                                                   \
   {                                                                            \
@@ -38,6 +39,7 @@ void Profiler::end()
 
 void Profiler::log(const char *log)
 {
+  LOCKLOGWRITE
   COMMATHINGEY(empty)
 
   file << "{";
@@ -58,6 +60,7 @@ void Profiler::log(const char *log)
 
 void Profiler::log(const char *name, const Value &args)
 {
+  LOCKLOGWRITE
   COMMATHINGEY(empty)
 
   file << "{";
@@ -87,6 +90,7 @@ void Profiler::log(const char *name, const Value &args)
 
 void Profiler::write(const ProfileResult &res)
 {
+  LOCKLOGWRITE
   COMMATHINGEY(empty)
 
   file << "{";

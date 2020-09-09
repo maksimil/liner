@@ -1,4 +1,5 @@
 #include "glua/glua.h"
+#include "renderer/renderer.h"
 #include "utils/profiler.h"
 #include "utils/time.h"
 #include <fstream>
@@ -52,15 +53,13 @@ void runmain()
   const MSTYPE period = MSTYPE((int) settings["delta"].number());
   auto lastupdate = NOW;
 
+  // renderer
+  Renderer &renderer = Renderer::get();
+  renderer.begin("ASS", period / 2);
+
   while (running)
   {
-    auto now = NOW;
-    auto duration = DURMS(now - lastupdate);
-    if (duration < period)
-    {
-      std::this_thread::sleep_for(period - duration);
-    }
-    lastupdate = NOW;
+    WAIT_UNTIL(lastupdate, period)
 
     {
       TSCOPE("update");
@@ -74,6 +73,8 @@ void runmain()
       }
       state = load<Value>(L);
       lua_pop(L, 1);
+
+      renderer.update();
     }
   }
   lua_close(L);
