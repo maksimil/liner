@@ -55,7 +55,7 @@ void runmain()
 
   // renderer
   Renderer &renderer = Renderer::get();
-  renderer.begin("ASS", period / 2);
+  renderer.begin("Title", period);
 
   while (running)
   {

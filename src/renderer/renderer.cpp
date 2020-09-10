@@ -14,13 +14,15 @@ void Renderer::begin(const char *windowname, const MSTYPE &period)
   running = true;
   renderthread = std::thread(
       [](const char *winname, bool *running, bool *updated,
-         const MSTYPE updateperiod) {
+         const MSTYPE updateperiod, std::vector<Line> *lines) {
         using namespace sf;
+
+        const uint32_t width = 600;
 
         Profiler &profiler = Profiler::get();
 
         TSCOPEID("intialize window", 20);
-        RenderWindow window(VideoMode(600, 600), winname);
+        RenderWindow window(VideoMode(width, width), winname);
         tsc20.stop();
 
         auto lastupdate = NOW;
@@ -40,14 +42,21 @@ void Renderer::begin(const char *windowname, const MSTYPE &period)
             }
 
             window.clear();
-            // render
+
+            for (size_t i = 0; i < lines->size(); i++)
+            {
+              const Line &line = lines->at(i);
+              window.draw(&line[0], line.size(), Lines);
+            }
+
             window.display();
 
             *updated = false;
+            lines->clear();
           }
         }
       },
-      windowname, &running, &updated, period);
+      windowname, &running, &updated, period, &lines);
 }
 
 void Renderer::update()
@@ -59,4 +68,9 @@ void Renderer::end()
 {
   running = false;
   renderthread.join();
+}
+
+void Renderer::draw(const Line &line)
+{
+  lines.push_back(line);
 }
