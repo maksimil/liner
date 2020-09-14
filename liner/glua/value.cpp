@@ -186,7 +186,7 @@ Value instantiate(const Value &shape)
     if (key == NUMBER)
       return 0;
     if (key == STRING)
-      return "";
+      return Value("");
     break;
   }
 
