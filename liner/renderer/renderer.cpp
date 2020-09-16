@@ -13,9 +13,10 @@ void Renderer::begin(const char *windowname, const MSTYPE &period)
   updated = false;
   running = true;
   renderthread = std::thread(
-      [](const char *winname, bool *running, bool *updated,
-         const MSTYPE updateperiod, std::vector<Line> *lines) {
+      [](const char *winname, const MSTYPE updateperiod) {
         using namespace sf;
+
+        Renderer &renderer = Renderer::get();
 
         const uint32_t width = 600;
 
@@ -27,11 +28,11 @@ void Renderer::begin(const char *windowname, const MSTYPE &period)
 
         auto lastupdate = NOW;
 
-        while (*running && window.isOpen())
+        while (renderer.running && window.isOpen())
         {
           WAIT_UNTIL(lastupdate, updateperiod)
 
-          if (*updated)
+          if (renderer.updated)
           {
             TSCOPE("render");
             Event event;
@@ -43,20 +44,23 @@ void Renderer::begin(const char *windowname, const MSTYPE &period)
 
             window.clear();
 
-            for (size_t i = 0; i < lines->size(); i++)
+            std::vector<Line> lines = renderer.lines;
+
+            for (size_t i = 0; i < lines.size(); i++)
             {
-              const Line &line = lines->at(i);
-              window.draw(&line[0], line.size(), Lines);
+              const Line &line = lines[i];
+
+              window.draw(&line[0], line.size(), LineStrip);
             }
 
             window.display();
 
-            *updated = false;
-            lines->clear();
+            renderer.lines.clear();
+            renderer.updated = false;
           }
         }
       },
-      windowname, &running, &updated, period, &lines);
+      windowname, period);
 }
 
 void Renderer::update()

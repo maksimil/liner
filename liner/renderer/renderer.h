@@ -1,5 +1,8 @@
+#pragma once
+
 #include "../utils/time.h"
 #include <SFML/Graphics.hpp>
+#include <future>
 #include <thread>
 #include <vector>
 
@@ -7,11 +10,12 @@ using Line = std::vector<sf::Vertex>;
 
 struct Renderer
 {
-  std::vector<Line> lines;
+  std::vector<Line> lines = {};
+
   std::thread renderthread;
 
-  bool running;
-  bool updated;
+  bool running = false;
+  bool updated = true;
 
   void begin(const char *windowname, const MSTYPE &period);
   void end();
