@@ -8,6 +8,7 @@
 
 void runmain()
 {
+  TSCOPEID("startup", 11);
   // read
   lstate L = newstate();
 
@@ -29,13 +30,12 @@ void runmain()
   const ValueRef update = load<ValueRef>(L, "update");
   const ValueRef init = load<ValueRef>(L, "init");
 
+  CHECKRUN(L, update.path);
+  const std::string &updatename = update.name;
+
   TSCOPEID("initialize", 27);
   CHECKRUN(L, shape.path);
   Value state = instantiate(L, shape.name.c_str());
-  tsc27.stop();
-
-  CHECKRUN(L, update.path);
-  const std::string &updatename = update.name;
 
   CHECKRUN(L, init.path);
   lua_getglobal(L, init.name.c_str());
@@ -47,6 +47,7 @@ void runmain()
   }
   state = load<Value>(L);
   lua_pop(L, 1);
+  tsc27.stop();
 
   // run
   bool running = true;
@@ -56,6 +57,8 @@ void runmain()
   // renderer
   Renderer &renderer = Renderer::get();
   renderer.begin("Title", period);
+
+  tsc11.stop();
 
   // main loop
   while (running)
