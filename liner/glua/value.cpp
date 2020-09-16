@@ -5,98 +5,99 @@
 
 // Value struct functions
 
-Value::Value(const valuetype &_type) : type(_type)
+Value::Value()
 {
-  switch (type)
+  vl = nullptr;
+}
+
+Value::~Value()
+{
+  delete vl;
+}
+
+Value::Value(const ValueIndex &index)
+{
+  vl = nullptr;
+  switch (index)
   {
-  case num:
-    vl = 0;
+  case ValueIndex::number:
+    vl = new VALUE_VARIANT(0);
     break;
-  case str:
-    vl = "";
+  case ValueIndex::string:
+    vl = new VALUE_VARIANT("");
     break;
-  case comp:
-    vl = new Component;
+  case ValueIndex::component:
+    vl = new VALUE_VARIANT(std::map<std::string, Value>{});
     break;
   }
 }
 
-Value::Value(const Value &value) : type(value.type)
+Value::Value(const Value &value)
 {
-  switch (type)
-  {
-  case num:
-  case str:
-    vl = value.vl;
-    break;
-  case comp:
-    vl = new Component;
-    *component() = *value.component();
-    break;
-  }
+  vl = new VALUE_VARIANT(*value.vl);
 }
 
-Value::Value(const double &number) : type(num)
+Value::Value(const double &number)
 {
-  vl = number;
+  vl = new VALUE_VARIANT(number);
 }
 
-Value::Value(const std::string &string) : type(str)
+Value::Value(const std::string &string)
 {
-  vl = string;
+  vl = new VALUE_VARIANT(string);
 }
 
 Value &Value::operator[](const std::string &key)
 {
-  return component()->at(key);
+  return component().at(key);
 }
 
 const Value &Value::operator[](const std::string &key) const
 {
-  return component()->at(key);
+  return component().at(key);
 }
 
 double &Value::number()
 {
-  return std::get<double>(vl);
+  return std::get<double>(*vl);
 }
 
 const double &Value::number() const
 {
-  return std::get<double>(vl);
+  return std::get<double>(*vl);
 }
 
 std::string &Value::string()
 {
-  return std::get<std::string>(vl);
+  return std::get<std::string>(*vl);
 }
 
 const std::string &Value::string() const
 {
-  return std::get<std::string>(vl);
+  return std::get<std::string>(*vl);
 }
 
-Component *&Value::component()
+Component &Value::component()
 {
-  return std::get<Component *>(vl);
+  return std::get<Component>(*vl);
 }
 
-const Component *Value::component() const
+const Component &Value::component() const
 {
-  return std::get<Component *>(vl);
+  return std::get<Component>(*vl);
 }
 
 std::string Value::tostring() const
 {
-  switch (type)
+  switch (vl->index())
   {
-  case num:
+  case NUMBER_INDEX:
     return std::to_string(number());
     break;
-  case str:
+  case STRING_INDEX:
     return string();
     break;
-  case comp:
+  case COMPONENT_INDEX:
     return "object";
     break;
   }
@@ -104,20 +105,24 @@ std::string Value::tostring() const
 }
 
 // Value functions
+void Value::operator=(const Value &other)
+{
+  *vl = *other.vl;
+}
 
 void pushvalue(lstate L, const Value &value)
 {
-  switch (value.type)
+  switch (value.vl->index())
   {
-  case num:
+  case NUMBER_INDEX:
     lua_pushnumber(L, value.number());
     break;
-  case str:
+  case STRING_INDEX:
     lua_pushstring(L, value.string().c_str());
     break;
-  case comp:
+  case COMPONENT_INDEX:
     lua_newtable(L);
-    for (auto &pair : *value.component())
+    for (auto &pair : value.component())
     {
       lua_pushstring(L, pair.first.c_str());
       pushvalue(L, pair.second);
@@ -130,25 +135,25 @@ void pushvalue(lstate L, const Value &value)
 void printvalue(std::ostream &cout, const Value &value,
                 const std::string &indent = "")
 {
-  switch (value.type)
+  switch (value.vl->index())
   {
-  case str:
+  case STRING_INDEX:
     cout << "\"" << value.string() << "\"";
     break;
-  case num:
+  case NUMBER_INDEX:
     cout << value.number();
     break;
-  case comp:
-    const Component &component = *value.component();
+  case COMPONENT_INDEX:
     const std::string newindent = indent + "  ";
     cout << "{\n";
-    for (auto &pair : component)
+    for (auto &pair : value.component())
     {
       cout << newindent << pair.first << ": ";
       printvalue(cout, pair.second, newindent);
       cout << ",\n";
     }
     cout << indent << "}";
+    break;
   }
 };
 
@@ -160,7 +165,7 @@ std::ostream &operator<<(std::ostream &cout, const Value &value)
 
 bool hasoption(const Value &value, const std::string &option)
 {
-  return value.component()->count(option);
+  return value.component().count(option);
 }
 
 Value instantiate(lstate L, const char *gname)
@@ -178,29 +183,29 @@ Value instantiate(lstate L)
 
 Value instantiate(const Value &shape)
 {
-  switch (shape.type)
+  switch (shape.vl->index())
   {
-  case str:
+  case STRING_INDEX:
   {
     const std::string key = shape.string();
     if (key == NUMBER)
-      return 0;
+      return Value(0);
     if (key == STRING)
       return Value("");
     break;
   }
 
-  case comp:
+  case COMPONENT_INDEX:
   {
-    Value res(comp);
-    Component *component = res.component();
-    for (auto &pair : *shape.component())
+    Value res(ValueIndex::component);
+    Component &component = res.component();
+    for (auto &pair : shape.component())
     {
-      component->insert({pair.first, instantiate(pair.second)});
+      component.insert({pair.first, instantiate(pair.second)});
     }
     return res;
     break;
   }
   }
-  return 0;
+  return Value(0);
 }

@@ -57,6 +57,7 @@ void runmain()
   Renderer &renderer = Renderer::get();
   renderer.begin("Title", period);
 
+  // main loop
   while (running)
   {
     WAIT_UNTIL(lastupdate, period)

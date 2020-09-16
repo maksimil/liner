@@ -23,46 +23,47 @@
 
 IMPLEMENTLOAD(Value)
 
-valuetype gettype(lstate L)
+uint8_t gettype(lstate L)
 {
   switch (lua_type(L, -1))
   {
   case LUA_TSTRING:
-    return str;
+    return STRING_INDEX;
     break;
   case LUA_TNUMBER:
-    return num;
+    return NUMBER_INDEX;
     break;
   case LUA_TTABLE:
-    return comp;
+    return COMPONENT_INDEX;
     break;
   }
-  return num;
+  return NUMBER_INDEX;
 }
 
 template <> Value load<Value>(lstate L)
 {
-  Value res(gettype(L));
-  switch (res.type)
+  switch (gettype(L))
   {
-  case num:
-    res.vl = lua_tonumber(L, -1);
+  case NUMBER_INDEX:
+    return lua_tonumber(L, -1);
     break;
-  case str:
-    res.vl = lua_tostring(L, -1);
+  case STRING_INDEX:
+    return Value(lua_tostring(L, -1));
     break;
-  case comp:
+  case COMPONENT_INDEX:
+    Value res(ValueIndex::component);
     lua_pushnil(L);
     while (lua_next(L, -2) != 0)
     {
       const std::string key = lua_tostring(L, -2);
       const Value value = load<Value>(L);
-      res.component()->insert(std::pair{key, value});
+      res.component().insert(std::pair{key, value});
       lua_pop(L, 1);
     }
+    return res;
     break;
   }
-  return res;
+  return Value(0);
 }
 
 IMPLEMENTLOAD(ValueRef)

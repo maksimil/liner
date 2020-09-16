@@ -77,7 +77,7 @@ void Profiler::log(const char *name, const Value &args)
        << ",";
   file << "\"args\":{";
 
-  const Component &argsmap = *args.component();
+  const Component &argsmap = args.component();
   bool nfirst = true;
   for (auto &pair : argsmap)
   {

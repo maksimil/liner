@@ -18,29 +18,39 @@
     return;                                                                    \
   }
 
-enum valuetype
-{
-  str,
-  num,
-  comp
-};
-
 struct ValueRef
 {
   std::string path;
   std::string name;
 };
 
+#define VALUE_VARIANT std::variant<double, std::string, Component>
+// variant index
+#define NUMBER_INDEX    0
+#define STRING_INDEX    1
+#define COMPONENT_INDEX 2
+
+enum class ValueIndex
+{
+  number,
+  string,
+  component
+};
+
 struct Value
 {
-  Value(const valuetype &_type);
+  Value();
+  ~Value();
+
+  Value(const ValueIndex &_type);
   Value(const Value &value);
 
   Value(const double &num);
   Value(const std::string &str);
 
-  valuetype type;
-  std::variant<double, std::string, Component *> vl;
+  void operator=(const Value &other);
+
+  VALUE_VARIANT *vl;
 
   Value &operator[](const std::string &key);
   const Value &operator[](const std::string &key) const;
@@ -52,8 +62,8 @@ struct Value
   const std::string &string() const;
   std::string tostring() const;
 
-  Component *&component();
-  const Component *component() const;
+  Component &component();
+  const Component &component() const;
 };
 
 lstate newstate();

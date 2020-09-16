@@ -20,11 +20,11 @@ struct ProfileResult
 
 struct Profiler
 {
-  bool profiling;
+  bool profiling = false;
 
   std::ofstream file;
   std::mutex filemutex;
-  bool empty;
+  bool empty = true;
 
   void begin(const char *fname);
   void end();
