@@ -7,9 +7,9 @@
 
 struct Console
 {
-  std::vector<std::future<void>> futs;
+    std::vector<std::future<void>> futs;
 
-  void log(const std::string &message);
+    void log(const std::string &message);
 
-  static Console &get();
+    static Console &get();
 };

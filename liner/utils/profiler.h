@@ -13,38 +13,38 @@
 
 struct ProfileResult
 {
-  int64_t start, end;
-  const char *name;
-  uint32_t tid;
+    int64_t start, end;
+    const char *name;
+    uint32_t tid;
 };
 
 struct Profiler
 {
-  bool profiling = false;
+    bool profiling = false;
 
-  std::ofstream file;
-  std::mutex filemutex;
-  bool empty = true;
+    std::ofstream file;
+    std::mutex filemutex;
+    bool empty = true;
 
-  void begin(const char *fname);
-  void end();
+    void begin(const char *fname);
+    void end();
 
-  void log(const char *message);
-  void log(const char *name, const Value &args);
-  void write(const ProfileResult &result);
+    void log(const char *message);
+    void log(const char *name, const Value &args);
+    void write(const ProfileResult &result);
 
-  static Profiler &get();
+    static Profiler &get();
 };
 
 struct TimeScope
 {
-  const char *name;
-  bool stopped;
+    const char *name;
+    bool stopped;
 
-  std::chrono::time_point<std::chrono::high_resolution_clock> start;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start;
 
-  TimeScope(const char *name_);
-  ~TimeScope();
+    TimeScope(const char *name_);
+    ~TimeScope();
 
-  void stop();
+    void stop();
 };

@@ -12,16 +12,16 @@
 #define Component std::map<std::string, Value>
 
 #define CHECKRUN(L, name)                                                      \
-  if (!runscript(L, name))                                                     \
-  {                                                                            \
-    lua_close(L);                                                              \
-    return;                                                                    \
-  }
+    if (!runscript(L, name))                                                   \
+    {                                                                          \
+        lua_close(L);                                                          \
+        return;                                                                \
+    }
 
 struct ValueRef
 {
-  std::string path;
-  std::string name;
+    std::string path;
+    std::string name;
 };
 
 #define VALUE_VARIANT std::variant<double, std::string, Component>
@@ -32,38 +32,38 @@ struct ValueRef
 
 enum class ValueIndex
 {
-  number,
-  string,
-  component
+    number,
+    string,
+    component
 };
 
 struct Value
 {
-  Value();
-  ~Value();
+    Value();
+    ~Value();
 
-  Value(const ValueIndex &_type);
-  Value(const Value &value);
+    Value(const ValueIndex &_type);
+    Value(const Value &value);
 
-  Value(const double &num);
-  Value(const std::string &str);
+    Value(const double &num);
+    Value(const std::string &str);
 
-  void operator=(const Value &other);
+    void operator=(const Value &other);
 
-  VALUE_VARIANT *vl;
+    VALUE_VARIANT *vl;
 
-  Value &operator[](const std::string &key);
-  const Value &operator[](const std::string &key) const;
+    Value &operator[](const std::string &key);
+    const Value &operator[](const std::string &key) const;
 
-  double &number();
-  const double &number() const;
+    double &number();
+    const double &number() const;
 
-  std::string &string();
-  const std::string &string() const;
-  std::string tostring() const;
+    std::string &string();
+    const std::string &string() const;
+    std::string tostring() const;
 
-  Component &component();
-  const Component &component() const;
+    Component &component();
+    const Component &component() const;
 };
 
 lstate newstate();
@@ -75,10 +75,10 @@ bool runscript(lstate L, const char *fname);
 void pushvalue(lstate L, const Value &value);
 
 #define LOADDEF(Tn)                                                            \
-  template <> Tn load<Tn>(const ValueRef &ref);                                \
-  template <> Tn load<Tn>(lstate L, const ValueRef &ref);                      \
-  template <> Tn load<Tn>(lstate L, const char *gname);                        \
-  template <> Tn load<Tn>(lstate L);
+    template <> Tn load<Tn>(const ValueRef &ref);                              \
+    template <> Tn load<Tn>(lstate L, const ValueRef &ref);                    \
+    template <> Tn load<Tn>(lstate L, const char *gname);                      \
+    template <> Tn load<Tn>(lstate L);
 
 template <typename T> T load(const ValueRef &ref);
 template <typename T> T load(lstate L, const ValueRef &ref);

@@ -8,125 +8,125 @@
 
 void runmain()
 {
-  TSCOPEID("startup", 11);
-  // read
-  lstate L = newstate();
+    TSCOPEID("startup", 11);
+    // read
+    lstate L = newstate();
 
-  CHECKRUN(L, "config.lua");
+    CHECKRUN(L, "config.lua");
 
-  // settings
-  const Value settings = load<Value>(L, "settings");
-  // profiler
-  Profiler &profiler = Profiler::get();
-  profiler.profiling = hasoption(settings, "profiling");
-  if (profiler.profiling)
-  {
-    const std::string &fname = settings["profiling"].string();
-    if (fname != "")
-      profiler.begin(fname.c_str());
-  }
-
-  const ValueRef shape = load<ValueRef>(L, "shape");
-  const ValueRef update = load<ValueRef>(L, "update");
-  const ValueRef init = load<ValueRef>(L, "init");
-
-  CHECKRUN(L, update.path);
-  const std::string &updatename = update.name;
-
-  TSCOPEID("initialize", 27);
-  CHECKRUN(L, shape.path);
-  Value state = instantiate(L, shape.name.c_str());
-
-  CHECKRUN(L, init.path);
-  lua_getglobal(L, init.name.c_str());
-  pushvalue(L, state);
-  if (!pcall(L, 1, 1))
-  {
-    lua_close(L);
-    return;
-  }
-  state = load<Value>(L);
-  lua_pop(L, 1);
-  tsc27.stop();
-
-  // run
-  bool running = true;
-  const MSTYPE period = MSTYPE((int) settings["delta"].number());
-  auto lastupdate = NOW;
-
-  // renderer
-  Renderer &renderer = Renderer::get();
-  renderer.begin("Title");
-
-  tsc11.stop();
-
-  // main loop
-  while (running)
-  {
-    WAIT_UNTIL(lastupdate, period)
-
+    // settings
+    const Value settings = load<Value>(L, "settings");
+    // profiler
+    Profiler &profiler = Profiler::get();
+    profiler.profiling = hasoption(settings, "profiling");
+    if (profiler.profiling)
     {
-      TSCOPE("update");
+        const std::string &fname = settings["profiling"].string();
+        if (fname != "")
+            profiler.begin(fname.c_str());
+    }
 
-      lua_getglobal(L, updatename.c_str());
-      pushvalue(L, state);
-      if (!pcall(L, 1, 1))
-      {
+    const ValueRef shape = load<ValueRef>(L, "shape");
+    const ValueRef update = load<ValueRef>(L, "update");
+    const ValueRef init = load<ValueRef>(L, "init");
+
+    CHECKRUN(L, update.path);
+    const std::string &updatename = update.name;
+
+    TSCOPEID("initialize", 27);
+    CHECKRUN(L, shape.path);
+    Value state = instantiate(L, shape.name.c_str());
+
+    CHECKRUN(L, init.path);
+    lua_getglobal(L, init.name.c_str());
+    pushvalue(L, state);
+    if (!pcall(L, 1, 1))
+    {
         lua_close(L);
         return;
-      }
-      state = load<Value>(L);
-      lua_pop(L, 1);
-
-      renderer.render();
     }
-  }
-  lua_close(L);
+    state = load<Value>(L);
+    lua_pop(L, 1);
+    tsc27.stop();
 
-  profiler.end();
+    // run
+    bool running = true;
+    const MSTYPE period = MSTYPE((int) settings["delta"].number());
+    auto lastupdate = NOW;
+
+    // renderer
+    Renderer &renderer = Renderer::get();
+    renderer.begin("Title");
+
+    tsc11.stop();
+
+    // main loop
+    while (running)
+    {
+        WAIT_UNTIL(lastupdate, period)
+
+        {
+            TSCOPE("update");
+
+            lua_getglobal(L, updatename.c_str());
+            pushvalue(L, state);
+            if (!pcall(L, 1, 1))
+            {
+                lua_close(L);
+                return;
+            }
+            state = load<Value>(L);
+            lua_pop(L, 1);
+
+            renderer.render();
+        }
+    }
+    lua_close(L);
+
+    profiler.end();
 }
 
 int main(int argc, char const *argv[])
 {
-  if (argc == 1)
-  {
-    runmain();
-  }
-  else
-  {
-    if (strcmp(argv[1], "init") == 0)
+    if (argc == 1)
     {
-      std::ofstream config("config.lua");
-      config << "settings = {\n";
-      config << "    delta = 100,\n";
-      config << "    profiling = \"profiler.json\",\n";
-      config << "}\n\n";
-      config << "shape = {\n";
-      config << "    path = \"f.lua\",\n";
-      config << "    name = \"shape\"\n";
-      config << "}\n\n";
-      config << "update = {\n";
-      config << "    path = \"f.lua\",\n";
-      config << "    name = \"update\"\n";
-      config << "}\n\n";
-      config << "init = {\n";
-      config << "    path = \"f.lua\",\n";
-      config << "    name = \"init\"\n";
-      config << "}\n";
-      config.close();
-
-      std::ofstream f("f.lua");
-      f << "shape = {}\n\n";
-      f << "init = function(obj)\n";
-      f << "    print(\"init\")\n";
-      f << "    return obj\n";
-      f << "end\n\n";
-      f << "update = function(obj)\n";
-      f << "    print(\"HW\")\n";
-      f << "    return obj\n";
-      f << "end\n";
-      f.close();
+        runmain();
     }
-  }
-  return 0;
+    else
+    {
+        if (strcmp(argv[1], "init") == 0)
+        {
+            std::ofstream config("config.lua");
+            config << "settings = {\n";
+            config << "    delta = 100,\n";
+            config << "    profiling = \"profiler.json\",\n";
+            config << "}\n\n";
+            config << "shape = {\n";
+            config << "    path = \"f.lua\",\n";
+            config << "    name = \"shape\"\n";
+            config << "}\n\n";
+            config << "update = {\n";
+            config << "    path = \"f.lua\",\n";
+            config << "    name = \"update\"\n";
+            config << "}\n\n";
+            config << "init = {\n";
+            config << "    path = \"f.lua\",\n";
+            config << "    name = \"init\"\n";
+            config << "}\n";
+            config.close();
+
+            std::ofstream f("f.lua");
+            f << "shape = {}\n\n";
+            f << "init = function(obj)\n";
+            f << "    print(\"init\")\n";
+            f << "    return obj\n";
+            f << "end\n\n";
+            f << "update = function(obj)\n";
+            f << "    print(\"HW\")\n";
+            f << "    return obj\n";
+            f << "end\n";
+            f.close();
+        }
+    }
+    return 0;
 }
