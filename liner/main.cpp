@@ -16,6 +16,7 @@ void runmain()
 
     // settings
     const Value settings = load<Value>(L, "settings");
+
     // profiler
     Profiler &profiler = Profiler::get();
     profiler.profiling = hasoption(settings, "profiling");
@@ -25,6 +26,10 @@ void runmain()
         if (fname != "")
             profiler.begin(fname.c_str());
     }
+
+    // renderer
+    std::future<void> renderinit =
+        Renderer::get().begin(settings["title"].string().c_str());
 
     const ValueRef shape = load<ValueRef>(L, "shape");
     const ValueRef update = load<ValueRef>(L, "update");
@@ -54,13 +59,12 @@ void runmain()
     const MSTYPE period = MSTYPE((int) settings["delta"].number());
     auto lastupdate = NOW;
 
-    // renderer
-    Renderer &renderer = Renderer::get();
-    renderer.begin("Title");
+    renderinit.wait();
 
     tsc11.stop();
 
     // main loop
+    Renderer &renderer = Renderer::get();
     while (running)
     {
         WAIT_UNTIL(lastupdate, period)

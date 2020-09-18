@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "../utils/profiler.h"
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 using namespace sf;
 
@@ -10,25 +11,33 @@ Renderer &Renderer::get()
     return instance;
 }
 
-void Renderer::begin(const char *windowname)
+std::future<void> Renderer::begin(const char *windowname)
 {
-    TSCOPEID("intialize window", 20);
-    window = new RenderWindow(VideoMode(600, 600), windowname);
-    tsc20.stop();
-    window->setActive(false);
+    return std::async(
+        std::launch::async,
+        [](const char *windowname) {
+            TSCOPE("initialize window");
+            RenderWindow *&window = Renderer::get().window;
+            window = new RenderWindow(VideoMode(600, 600), windowname);
+            window->setActive(false);
+        },
+        windowname);
 }
 
 void Renderer::render()
 {
+    if (rendertaskfuture.valid())
+        rendertaskfuture.wait();
+
     rendertaskfuture = std::async(
         std::launch::async,
         [](std::vector<Line> lines) {
+            TSCOPE("render");
             Renderer &renderer = Renderer::get();
 
             std::lock_guard lk(renderer.windowmutex);
             RenderWindow &window = *renderer.window;
 
-            TSCOPE("render");
             Event event;
             while (window.pollEvent(event))
             {

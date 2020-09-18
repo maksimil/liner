@@ -17,7 +17,7 @@ struct Renderer
 
     std::future<void> rendertaskfuture;
 
-    void begin(const char *windowname);
+    std::future<void> begin(const char *windowname);
     void end();
 
     void render();
