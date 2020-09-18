@@ -11,17 +11,19 @@ Renderer &Renderer::get()
     return instance;
 }
 
-std::future<void> Renderer::begin(const char *windowname)
+std::future<void> Renderer::begin(const char *windowname, const uint32_t &width,
+                                  const uint32_t &height)
 {
     return std::async(
         std::launch::async,
-        [](const char *windowname) {
+        [](const char *windowname, const uint32_t width,
+           const uint32_t height) {
             TSCOPE("initialize window");
             RenderWindow *&window = Renderer::get().window;
-            window = new RenderWindow(VideoMode(600, 600), windowname);
+            window = new RenderWindow(VideoMode(width, height), windowname);
             window->setActive(false);
         },
-        windowname);
+        windowname, width, height);
 }
 
 void Renderer::render()

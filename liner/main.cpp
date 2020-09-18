@@ -28,8 +28,14 @@ void runmain()
     }
 
     // renderer
+    const Value &windowsettings = settings["window"];
+
+    const char *windowtitle = windowsettings["title"].string().c_str();
+    const uint32_t &windowwidth = windowsettings["width"].number();
+    const uint32_t &windowheight = windowsettings["height"].number();
+
     std::future<void> renderinit =
-        Renderer::get().begin(settings["title"].string().c_str());
+        Renderer::get().begin(windowtitle, windowwidth, windowheight);
 
     const ValueRef shape = load<ValueRef>(L, "shape");
     const ValueRef update = load<ValueRef>(L, "update");
