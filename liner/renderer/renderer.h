@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../utils/time.h"
 #include <SFML/Graphics.hpp>
 #include <future>
 #include <thread>
@@ -12,15 +11,16 @@ struct Renderer
 {
   std::vector<Line> lines = {};
 
-  std::thread renderthread;
+  sf::RenderWindow *window;
 
-  bool running = false;
-  bool updated = true;
+  std::mutex windowmutex;
 
-  void begin(const char *windowname, const MSTYPE &period);
+  std::future<void> rendertaskfuture;
+
+  void begin(const char *windowname);
   void end();
 
-  void update();
+  void render();
   void draw(const Line &line);
 
   static Renderer &get();

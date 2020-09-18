@@ -56,7 +56,7 @@ void runmain()
 
   // renderer
   Renderer &renderer = Renderer::get();
-  renderer.begin("Title", period);
+  renderer.begin("Title");
 
   tsc11.stop();
 
@@ -78,7 +78,7 @@ void runmain()
       state = load<Value>(L);
       lua_pop(L, 1);
 
-      renderer.update();
+      renderer.render();
     }
   }
   lua_close(L);
