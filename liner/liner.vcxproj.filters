@@ -21,9 +21,6 @@
     <ClCompile Include="glua\glua.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glua\load.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="glua\parallel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,6 +34,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils\profiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glua\load.h">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

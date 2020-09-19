@@ -74,20 +74,6 @@ bool runscript(lstate L, const char *fname);
 
 void pushvalue(lstate L, const Value &value);
 
-#define LOADDEF(Tn)                                                            \
-    template <> Tn load<Tn>(const ValueRef &ref);                              \
-    template <> Tn load<Tn>(lstate L, const ValueRef &ref);                    \
-    template <> Tn load<Tn>(lstate L, const char *gname);                      \
-    template <> Tn load<Tn>(lstate L);
-
-template <typename T> T load(const ValueRef &ref);
-template <typename T> T load(lstate L, const ValueRef &ref);
-template <typename T> T load(lstate L, const char *gname);
-template <typename T> T load(lstate L);
-
-LOADDEF(Value)
-LOADDEF(ValueRef)
-
 Value instantiate(lstate L, const char *gname);
 Value instantiate(lstate L);
 Value instantiate(const Value &shape);

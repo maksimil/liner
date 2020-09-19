@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glua\glua.cpp" />
-    <ClCompile Include="glua\load.cpp" />
+    <ClCompile Include="glua\load.h" />
     <ClCompile Include="glua\parallel.cpp" />
     <ClCompile Include="glua\value.cpp" />
     <ClCompile Include="main.cpp" />

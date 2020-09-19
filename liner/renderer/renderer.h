@@ -11,7 +11,7 @@ struct Renderer
 {
     std::vector<Line> lines = {};
 
-    sf::RenderWindow *window;
+    sf::RenderWindow *window = nullptr;
 
     std::mutex windowmutex;
 

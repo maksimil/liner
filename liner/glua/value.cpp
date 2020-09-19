@@ -1,4 +1,5 @@
 #include "glua.h"
+#include "load.h"
 
 #define NUMBER "number"
 #define STRING "string"

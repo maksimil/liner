@@ -1,4 +1,5 @@
 #include "glua.h"
+#include "load.h"
 
 void runtask(const Value *value, const char *fname, const char *function,
              std::mutex *mutex, std::vector<Value> *vs)

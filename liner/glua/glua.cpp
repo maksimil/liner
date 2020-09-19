@@ -2,6 +2,7 @@
 #include "../renderer/renderer.h"
 #include "../utils/console.h"
 #include "../utils/profiler.h"
+#include "load.h"
 #include <iostream>
 
 lstate newstate()

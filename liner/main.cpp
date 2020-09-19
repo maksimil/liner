@@ -1,4 +1,5 @@
 #include "glua/glua.h"
+#include "glua/load.h"
 #include "renderer/renderer.h"
 #include "utils/profiler.h"
 #include "utils/time.h"
@@ -31,12 +32,13 @@ void runmain()
     const Value &windowsettings = settings["window"];
 
     const char *windowtitle = windowsettings["title"].string().c_str();
-    const uint32_t &windowwidth = windowsettings["width"].number();
-    const uint32_t &windowheight = windowsettings["height"].number();
+    const uint32_t &windowwidth = (uint32_t) windowsettings["width"].number();
+    const uint32_t &windowheight = (uint32_t) windowsettings["height"].number();
 
     std::future<void> renderinit =
         Renderer::get().begin(windowtitle, windowwidth, windowheight);
 
+    TSCOPEID("initialize state", 27);
     const ValueRef shape = load<ValueRef>(L, "shape");
     const ValueRef update = load<ValueRef>(L, "update");
     const ValueRef init = load<ValueRef>(L, "init");
@@ -44,7 +46,6 @@ void runmain()
     CHECKRUN(L, update.path);
     const std::string &updatename = update.name;
 
-    TSCOPEID("initialize", 27);
     CHECKRUN(L, shape.path);
     Value state = instantiate(L, shape.name.c_str());
 
