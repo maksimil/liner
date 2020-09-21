@@ -1,9 +1,6 @@
 #include "glua.h"
 #include "load.h"
 
-#define NUMBER "number"
-#define STRING "string"
-
 // Value struct functions
 
 Value::Value()
@@ -28,7 +25,10 @@ Value::Value(const ValueIndex &index)
         vl = new VALUE_VARIANT("");
         break;
     case ValueIndex::component:
-        vl = new VALUE_VARIANT(std::map<std::string, Value>{});
+        vl = new VALUE_VARIANT(Component{});
+        break;
+    case ValueIndex::list:
+        vl = new VALUE_VARIANT(List{});
         break;
     }
 }
@@ -58,35 +58,31 @@ const Value &Value::operator[](const std::string &key) const
     return component().at(key);
 }
 
-double &Value::number()
+Value &Value::operator[](const int &index)
 {
-    return std::get<double>(*vl);
+    return list().at(index);
 }
 
-const double &Value::number() const
+const Value &Value::operator[](const int &index) const
 {
-    return std::get<double>(*vl);
+    return list().at(index);
 }
 
-std::string &Value::string()
-{
-    return std::get<std::string>(*vl);
-}
+#define IMPLEMENTGET(Tn, fname)                                                \
+    Tn &Value::fname()                                                         \
+    {                                                                          \
+        return std::get<Tn>(*vl);                                              \
+    }                                                                          \
+                                                                               \
+    const Tn &Value::fname() const                                             \
+    {                                                                          \
+        return std::get<Tn>(*vl);                                              \
+    }
 
-const std::string &Value::string() const
-{
-    return std::get<std::string>(*vl);
-}
-
-Component &Value::component()
-{
-    return std::get<Component>(*vl);
-}
-
-const Component &Value::component() const
-{
-    return std::get<Component>(*vl);
-}
+IMPLEMENTGET(double, number)
+IMPLEMENTGET(std::string, string)
+IMPLEMENTGET(Component, component)
+IMPLEMENTGET(List, list)
 
 std::string Value::tostring() const
 {
@@ -100,6 +96,9 @@ std::string Value::tostring() const
         break;
     case COMPONENT_INDEX:
         return "object";
+        break;
+    case LIST_INDEX:
+        return "list";
         break;
     }
     return "";
@@ -130,6 +129,17 @@ void pushvalue(lstate L, const Value &value)
             lua_settable(L, -3);
         }
         break;
+    case LIST_INDEX:
+        lua_newtable(L);
+
+        const List &list = value.list();
+        for (size_t i = 0; i < list.size(); i++)
+        {
+            lua_pushnumber(L, i);
+            pushvalue(L, list[i]);
+            lua_settable(L, -3);
+        }
+        break;
     }
 }
 
@@ -145,6 +155,7 @@ void printvalue(std::ostream &cout, const Value &value,
         cout << value.number();
         break;
     case COMPONENT_INDEX:
+    {
         const std::string newindent = indent + "  ";
         cout << "{\n";
         for (auto &pair : value.component())
@@ -154,7 +165,21 @@ void printvalue(std::ostream &cout, const Value &value,
             cout << ",\n";
         }
         cout << indent << "}";
-        break;
+    }
+    break;
+    case LIST_INDEX:
+    {
+        const std::string newindent = indent + "  ";
+        cout << "[\n";
+        for (auto &element : value.list())
+        {
+            cout << newindent;
+            printvalue(cout, element, newindent);
+            cout << ",\n";
+        }
+        cout << indent << "]";
+    }
+    break;
     }
 };
 
@@ -182,6 +207,10 @@ Value instantiate(lstate L)
     return instantiate(load<Value>(L));
 }
 
+#define NUMBER "number"
+#define STRING "string"
+#define LIST   "list"
+
 Value instantiate(const Value &shape)
 {
     switch (shape.vl->index())
@@ -193,6 +222,8 @@ Value instantiate(const Value &shape)
             return Value(0);
         if (key == STRING)
             return Value("");
+        if (key == LIST)
+            return Value(ValueIndex::list);
         break;
     }
 
@@ -207,6 +238,10 @@ Value instantiate(const Value &shape)
         return res;
         break;
     }
+
+    case LIST_INDEX:
+        return Value(ValueIndex::list);
+        break;
     }
     return Value(0);
 }

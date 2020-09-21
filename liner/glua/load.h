@@ -37,8 +37,28 @@ inline uint8_t gettype(lstate L)
         return NUMBER_INDEX;
         break;
     case LUA_TTABLE:
-        return COMPONENT_INDEX;
-        break;
+    {
+        lua_pushnil(L);
+        const uint8_t res = lua_next(L, -2);
+
+        if (res == 0)
+            return LIST_INDEX;
+
+        const int type = lua_type(L, -2);
+
+        lua_pop(L, 2);
+
+        switch (type)
+        {
+        case LUA_TNUMBER:
+            return LIST_INDEX;
+            break;
+        case LUA_TSTRING:
+            return COMPONENT_INDEX;
+            break;
+        }
+    }
+    break;
     }
     return NUMBER_INDEX;
 }
@@ -54,6 +74,7 @@ template <> inline Value load<Value>(lstate L)
         return Value(lua_tostring(L, -1));
         break;
     case COMPONENT_INDEX:
+    {
         Value res(ValueIndex::component);
         lua_pushnil(L);
         while (lua_next(L, -2) != 0)
@@ -64,7 +85,21 @@ template <> inline Value load<Value>(lstate L)
             lua_pop(L, 1);
         }
         return res;
-        break;
+    }
+    break;
+    case LIST_INDEX:
+    {
+        Value res(ValueIndex::list);
+        lua_pushnil(L);
+        while (lua_next(L, -2) != 0)
+        {
+            const Value value = load<Value>(L);
+            res.list().push_back(value);
+            lua_pop(L, 1);
+        }
+        return res;
+    }
+    break;
     }
     return Value(0);
 }

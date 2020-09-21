@@ -10,6 +10,7 @@
 
 #define lstate    lua_State *
 #define Component std::map<std::string, Value>
+#define List      std::vector<Value>
 
 #define CHECKRUN(L, name)                                                      \
     if (!runscript(L, name))                                                   \
@@ -24,17 +25,19 @@ struct ValueRef
     std::string name;
 };
 
-#define VALUE_VARIANT std::variant<double, std::string, Component>
+#define VALUE_VARIANT std::variant<double, std::string, Component, List>
 // variant index
 #define NUMBER_INDEX    0
 #define STRING_INDEX    1
 #define COMPONENT_INDEX 2
+#define LIST_INDEX      3
 
 enum class ValueIndex
 {
     number,
     string,
-    component
+    component,
+    list
 };
 
 struct Value
@@ -55,6 +58,9 @@ struct Value
     Value &operator[](const std::string &key);
     const Value &operator[](const std::string &key) const;
 
+    Value &operator[](const int &index);
+    const Value &operator[](const int &index) const;
+
     double &number();
     const double &number() const;
 
@@ -64,6 +70,9 @@ struct Value
 
     Component &component();
     const Component &component() const;
+
+    List &list();
+    const List &list() const;
 };
 
 lstate newstate();
