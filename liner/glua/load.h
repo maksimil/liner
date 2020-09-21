@@ -19,8 +19,19 @@ template <typename T> inline T load(lstate L, const ValueRef &ref)
 template <typename T> inline T load(lstate L, const char *gname)
 {
     lua_getglobal(L, gname);
-    return load<T>(L);
+    const T res = load<T>(L);
+    lua_pop(L, 1);
+    return res;
 }
+
+template <typename T> inline T load(lstate L, const int &index)
+{
+    lua_pushvalue(L, index);
+    const T res = load<T>(L);
+    lua_pop(L, 1);
+    return res;
+}
+
 template <typename T> inline T load(lstate L)
 {
     return T();
