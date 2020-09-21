@@ -37,6 +37,21 @@ template <typename T> inline T load(lstate L)
     return T();
 }
 
+template <> inline double load<double>(lstate L)
+{
+    return lua_tonumber(L, -1);
+}
+
+template <> inline const char *load<const char *>(lstate L)
+{
+    return lua_tostring(L, -1);
+}
+
+template <> inline std::string load<std::string>(lstate L)
+{
+    return load<const char *>(L);
+}
+
 inline uint8_t gettype(lstate L)
 {
     switch (lua_type(L, -1))
@@ -79,10 +94,10 @@ template <> inline Value load<Value>(lstate L)
     switch (gettype(L))
     {
     case NUMBER_INDEX:
-        return lua_tonumber(L, -1);
+        return load<double>(L);
         break;
     case STRING_INDEX:
-        return Value(lua_tostring(L, -1));
+        return Value(load<const char *>(L));
         break;
     case COMPONENT_INDEX:
     {
@@ -90,7 +105,7 @@ template <> inline Value load<Value>(lstate L)
         lua_pushnil(L);
         while (lua_next(L, -2) != 0)
         {
-            const std::string key = lua_tostring(L, -2);
+            const std::string key = load<const char *>(L, -2);
             const Value value = load<Value>(L);
             res.component().insert(std::pair{key, value});
             lua_pop(L, 1);
@@ -120,12 +135,12 @@ template <> inline ValueRef load<ValueRef>(lstate L)
     ValueRef ref;
     lua_pushstring(L, "path");
     lua_gettable(L, -2);
-    ref.path = lua_tostring(L, -1);
+    ref.path = load<const char *>(L);
     lua_pop(L, 1);
 
     lua_pushstring(L, "name");
     lua_gettable(L, -2);
-    ref.name = lua_tostring(L, -1);
+    ref.name = load<const char *>(L);
     lua_pop(L, 1);
 
     return ref;
