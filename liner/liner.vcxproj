@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glua\glua.cpp" />
-    <ClCompile Include="glua\load.h" />
     <ClCompile Include="glua\parallel.cpp" />
     <ClCompile Include="glua\value.cpp" />
     <ClCompile Include="main.cpp" />
@@ -29,6 +28,7 @@
     <ClCompile Include="utils\profiler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="glua\load.h" />
     <ClInclude Include="glua\glua.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="utils\console.h" />

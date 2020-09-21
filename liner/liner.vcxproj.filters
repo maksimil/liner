@@ -36,11 +36,11 @@
     <ClCompile Include="utils\profiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glua\load.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="glua\load.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
     <ClInclude Include="glua\glua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
