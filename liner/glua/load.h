@@ -100,13 +100,7 @@ template <> struct Load<Value>
         case LIST_INDEX:
         {
             Value res(ValueIndex::list);
-            lua_pushnil(L);
-            while (lua_next(L, -2) != 0)
-            {
-                const Value value = load<Value>(L);
-                res.list().push_back(value);
-                lua_pop(L, 1);
-            }
+            res.list() = load<List>(L);
             return res;
         }
         break;
@@ -126,6 +120,23 @@ template <class K, class T> struct Load<std::map<K, T>>
             const K key = load<K>(L, -2);
             const T value = load<T>(L);
             res.insert(std::pair<K, T>{key, value});
+            lua_pop(L, 1);
+        }
+        return res;
+    }
+};
+
+template <class T> struct Load<std::vector<T>>
+{
+
+    static std::vector<T> structload(lstate L)
+    {
+        std::vector<T> res = {};
+        lua_pushnil(L);
+        while (lua_next(L, -2) != 0)
+        {
+            const T value = load<T>(L);
+            res.push_back(value);
             lua_pop(L, 1);
         }
         return res;
