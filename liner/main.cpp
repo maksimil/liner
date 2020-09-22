@@ -62,7 +62,6 @@ void runmain()
     tsc27.stop();
 
     // run
-    bool running = true;
     const MSTYPE period = MSTYPE((int) settings["delta"].number());
     auto lastupdate = NOW;
 
@@ -72,7 +71,7 @@ void runmain()
 
     // main loop
     Renderer &renderer = Renderer::get();
-    while (running)
+    while (renderer.window->isOpen())
     {
         WAIT_UNTIL(lastupdate, period)
 
