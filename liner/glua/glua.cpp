@@ -60,6 +60,12 @@ lstate newstate()
         return 0;
     });
 
+    // close window
+    lua_register(L, "window_close", [](lstate Lf) -> int {
+        Renderer::get().window->close();
+        return 0;
+    });
+
     return L;
 }
 
