@@ -2,55 +2,44 @@
 
 #include "glua.h"
 
-template <typename T> inline T load(const ValueRef &ref)
-{
-    lstate L = newstate();
-    const T res = load<T>(L, ref);
-    lua_close(L);
-    return res;
-}
+template <class T> T load(const ValueRef &);
+template <class T> T load(lstate, const ValueRef &);
+template <class T> T load(lstate, const char *);
+template <class T> T load(lstate, const int &);
+template <class T> T load(lstate);
 
-template <typename T> inline T load(lstate L, const ValueRef &ref)
+// have to use a class for partial specilization
+template <class T> struct Load
 {
-    runscript(L, ref.path);
-    return load<T>(L, ref.name.c_str());
-}
+    static T structload(lstate L)
+    {
+        return T();
+    }
+};
 
-template <typename T> inline T load(lstate L, const char *gname)
+template <> struct Load<double>
 {
-    lua_getglobal(L, gname);
-    const T res = load<T>(L);
-    lua_pop(L, 1);
-    return res;
-}
+    static double structload(lstate L)
+    {
+        return lua_tonumber(L, -1);
+    }
+};
 
-template <typename T> inline T load(lstate L, const int &index)
+template <> struct Load<const char *>
 {
-    lua_pushvalue(L, index);
-    const T res = load<T>(L);
-    lua_pop(L, 1);
-    return res;
-}
+    static const char *structload(lstate L)
+    {
+        return lua_tostring(L, -1);
+    }
+};
 
-template <typename T> inline T load(lstate L)
+template <> struct Load<std::string>
 {
-    return T();
-}
-
-template <> inline double load<double>(lstate L)
-{
-    return lua_tonumber(L, -1);
-}
-
-template <> inline const char *load<const char *>(lstate L)
-{
-    return lua_tostring(L, -1);
-}
-
-template <> inline std::string load<std::string>(lstate L)
-{
-    return load<const char *>(L);
-}
+    static std::string structload(lstate L)
+    {
+        return load<const char *>(L);
+    }
+};
 
 inline uint8_t gettype(lstate L)
 {
@@ -89,59 +78,110 @@ inline uint8_t gettype(lstate L)
     return NUMBER_INDEX;
 }
 
-template <> inline Value load<Value>(lstate L)
+template <> struct Load<Value>
 {
-    switch (gettype(L))
+    static Value structload(lstate L)
     {
-    case NUMBER_INDEX:
-        return load<double>(L);
+        switch (gettype(L))
+        {
+        case NUMBER_INDEX:
+            return load<double>(L);
+            break;
+        case STRING_INDEX:
+            return Value(load<const char *>(L));
+            break;
+        case COMPONENT_INDEX:
+        {
+            Value res(ValueIndex::component);
+            res.component() = load<Component>(L);
+            return res;
+        }
         break;
-    case STRING_INDEX:
-        return Value(load<const char *>(L));
+        case LIST_INDEX:
+        {
+            Value res(ValueIndex::list);
+            lua_pushnil(L);
+            while (lua_next(L, -2) != 0)
+            {
+                const Value value = load<Value>(L);
+                res.list().push_back(value);
+                lua_pop(L, 1);
+            }
+            return res;
+        }
         break;
-    case COMPONENT_INDEX:
+        }
+        return Value(0);
+    }
+};
+
+template <class K, class T> struct Load<std::map<K, T>>
+{
+    static std::map<K, T> structload(lstate L)
     {
-        Value res(ValueIndex::component);
+        std::map<K, T> res = {};
         lua_pushnil(L);
         while (lua_next(L, -2) != 0)
         {
-            const std::string key = load<const char *>(L, -2);
-            const Value value = load<Value>(L);
-            res.component().insert(std::pair{key, value});
+            const K key = load<K>(L, -2);
+            const T value = load<T>(L);
+            res.insert(std::pair<K, T>{key, value});
             lua_pop(L, 1);
         }
         return res;
     }
-    break;
-    case LIST_INDEX:
+};
+
+template <> struct Load<ValueRef>
+{
+    static ValueRef structload(lstate L)
     {
-        Value res(ValueIndex::list);
-        lua_pushnil(L);
-        while (lua_next(L, -2) != 0)
-        {
-            const Value value = load<Value>(L);
-            res.list().push_back(value);
-            lua_pop(L, 1);
-        }
-        return res;
+        ValueRef ref;
+        lua_pushstring(L, "path");
+        lua_gettable(L, -2);
+        ref.path = load<const char *>(L);
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "name");
+        lua_gettable(L, -2);
+        ref.name = load<const char *>(L);
+        lua_pop(L, 1);
+
+        return ref;
     }
-    break;
-    }
-    return Value(0);
+};
+
+template <class T> inline T load(const ValueRef &ref)
+{
+    lstate L = newstate();
+    const T res = load<T>(L, ref);
+    lua_close(L);
+    return res;
 }
 
-template <> inline ValueRef load<ValueRef>(lstate L)
+template <class T> inline T load(lstate L, const ValueRef &ref)
 {
-    ValueRef ref;
-    lua_pushstring(L, "path");
-    lua_gettable(L, -2);
-    ref.path = load<const char *>(L);
-    lua_pop(L, 1);
+    runscript(L, ref.path);
+    return load<T>(L, ref.name.c_str());
+}
 
-    lua_pushstring(L, "name");
-    lua_gettable(L, -2);
-    ref.name = load<const char *>(L);
+template <class T> inline T load(lstate L, const char *gname)
+{
+    lua_getglobal(L, gname);
+    const T res = load<T>(L);
     lua_pop(L, 1);
+    return res;
+}
 
-    return ref;
+template <class T> inline T load(lstate L, const int &index)
+{
+    lua_pushvalue(L, index);
+    const T res = load<T>(L);
+    lua_pop(L, 1);
+    return res;
+}
+
+template <class T> inline T load(lstate L)
+{
+    return Load<T>::structload(L);
 }
