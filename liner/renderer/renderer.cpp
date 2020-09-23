@@ -41,11 +41,20 @@ void Renderer::render()
                 std::lock_guard lk(renderer.windowmutex);
                 RenderWindow &window = *renderer.window;
 
-                Event event;
+                renderer.events.clear();
+                sf::Event event;
                 while (window.pollEvent(event))
                 {
-                    if (event.type == Event::Closed)
+                    switch (event.type)
+                    {
+                    case sf::Event::KeyPressed:
+                    case sf::Event::KeyReleased:
+                        renderer.events.push_back(event);
+                        break;
+                    case sf::Event::Closed:
                         window.close();
+                        break;
+                    }
                 }
 
                 window.clear();

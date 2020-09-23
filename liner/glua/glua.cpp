@@ -71,6 +71,30 @@ lstate newstate()
         return 0;
     });
 
+    // poll events
+    lua_register(L, "poll_events", [](lstate Lf) -> int {
+        std::vector<sf::Event> events = Renderer::get().events;
+
+        for (size_t i = 0; i < events.size(); i++)
+        {
+            auto &e = events[i];
+
+            Value evalue(ValueIndex::component);
+            Component &evaluemap = evalue.component();
+            evaluemap.insert(
+                std::pair<std::string, Value>{"type", (double) e.type});
+            evaluemap.insert(
+                std::pair<std::string, Value>{"key", (double) e.key.code});
+
+            lua_pushvalue(Lf, 1);
+            pushvalue(Lf, evalue);
+
+            pcall(Lf, 1, 0);
+        }
+
+        return 0;
+    });
+
     return L;
 }
 
