@@ -34,6 +34,14 @@ template <> struct Load<float>
     }
 };
 
+template <> struct Load<uint8_t>
+{
+    static uint8_t structload(lstate L)
+    {
+        return (uint8_t) lua_tointeger(L, -1);
+    }
+};
+
 template <> struct Load<const char *>
 {
     static const char *structload(lstate L)
@@ -168,6 +176,37 @@ template <class T, size_t S> struct Load<std::array<T, S>>
             i++;
         }
 
+        return res;
+    }
+};
+
+template <size_t I, class... T>
+void loadtuple(lstate L, std::tuple<T...> &tuple)
+{
+    if constexpr (I < sizeof...(T))
+    {
+        if (lua_next(L, -2))
+        {
+            std::get<I>(tuple) =
+                load<std::tuple_element_t<I, std::tuple<T...>>>(L);
+            lua_pop(L, 1);
+
+            loadtuple<I + 1, T...>(L, tuple);
+        }
+    }
+    else if (lua_next(L, -2) != 0)
+    {
+        lua_pop(L, 2);
+    }
+}
+
+template <class... T> struct Load<std::tuple<T...>>
+{
+    static std::tuple<T...> structload(lstate L)
+    {
+        std::tuple<T...> res;
+        lua_pushnil(L);
+        loadtuple<0, T...>(L, res);
         return res;
     }
 };
