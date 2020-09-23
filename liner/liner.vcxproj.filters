@@ -38,9 +38,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="glua\load.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClInclude Include="glua\glua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,6 +51,23 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils\time.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glua\load\base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="glua\load.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glua\load\elementary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glua\load\glua.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glua\load\templates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -29,6 +29,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glua\load.h" />
+    <ClInclude Include="glua\load\base.h" />
+    <ClInclude Include="glua\load\elementary.h" />
+    <ClInclude Include="glua\load\glua.h" />
+    <ClInclude Include="glua\load\templates.h" />
     <ClInclude Include="glua\glua.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="utils\console.h" />
