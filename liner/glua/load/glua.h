@@ -1,6 +1,8 @@
 #pragma once
 
+#include "SFML/Graphics/Vertex.hpp"
 #include "base.h"
+#include <array>
 
 inline uint8_t gettype(lstate L)
 {
@@ -86,5 +88,45 @@ template <> struct Load<ValueRef>
         lua_pop(L, 1);
 
         return ref;
+    }
+};
+
+template <> struct Load<sf::Color>
+{
+    static sf::Color structload(lstate L)
+    {
+        sf::Color res;
+
+        auto rgb = load<std::array<uint8_t, 3>>(L);
+
+        res.r = rgb[0];
+        res.g = rgb[1];
+        res.b = rgb[2];
+
+        return res;
+    };
+};
+
+template <> struct Load<sf::Vector2f>
+{
+    static sf::Vector2f structload(lstate L)
+    {
+        auto vs = load<std::tuple<float, float>>(L);
+        return {std::get<0>(vs), std::get<1>(vs)};
+    }
+};
+
+template <> struct Load<sf::Vertex>
+{
+    static sf::Vertex structload(lstate L)
+    {
+        sf::Vertex res;
+
+        auto vs = load<std::tuple<sf::Vector2f, sf::Color>>(L);
+
+        res.position = std::get<0>(vs);
+        res.color = std::get<1>(vs);
+
+        return res;
     }
 };

@@ -9,18 +9,27 @@ int draw_line(lstate Lf)
 {
     Line line;
 
+    sf::Color color = load<sf::Color>(Lf);
+    lua_pop(Lf, 1);
+
     lua_pushnil(Lf);
     while (lua_next(Lf, -2) != 0)
     {
         auto xy = load<std::array<float, 2>>(Lf);
 
-        line.push_back({{xy[0], xy[1]}, sf::Color::White});
+        line.push_back({{xy[0], xy[1]}, color});
 
         lua_pop(Lf, 1);
     }
 
     Renderer::get().draw(line);
 
+    return 0;
+}
+
+int draw_verticies(lstate Lf)
+{
+    Renderer::get().draw(load<Line>(Lf));
     return 0;
 }
 
@@ -52,6 +61,9 @@ lstate newstate()
 
     // draw line
     lua_register(L, "draw_line", draw_line);
+
+    // draw verticies
+    lua_register(L, "draw_verticies", draw_verticies);
 
     // close window
     lua_register(L, "window_close", [](lstate Lf) -> int {
