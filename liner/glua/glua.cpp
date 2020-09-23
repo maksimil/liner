@@ -5,6 +5,25 @@
 #include "load.h"
 #include <iostream>
 
+int draw_line(lstate Lf)
+{
+    Line line;
+
+    lua_pushnil(Lf);
+    while (lua_next(Lf, -2) != 0)
+    {
+        auto xy = load<std::array<float, 2>>(Lf);
+
+        line.push_back({{xy[0], xy[1]}, sf::Color::White});
+
+        lua_pop(Lf, 1);
+    }
+
+    Renderer::get().draw(line);
+
+    return 0;
+}
+
 lstate newstate()
 {
     lstate L = luaL_newstate();
@@ -32,33 +51,7 @@ lstate newstate()
     });
 
     // draw line
-    lua_register(L, "draw_line", [](lstate Lf) -> int {
-        Line line;
-
-        lua_pushnil(Lf);
-        while (lua_next(Lf, -2) != 0)
-        {
-            lua_pushnil(Lf);
-
-            // x
-            lua_next(Lf, -2);
-            const float x = (float) lua_tonumber(Lf, -1);
-            lua_pop(Lf, 1);
-
-            // y
-            lua_next(Lf, -2);
-            const float y = (float) lua_tonumber(Lf, -1);
-            lua_pop(Lf, 2);
-
-            line.push_back({{x, y}, sf::Color::White});
-
-            lua_pop(Lf, 1);
-        }
-
-        Renderer::get().draw(line);
-
-        return 0;
-    });
+    lua_register(L, "draw_line", draw_line);
 
     // close window
     lua_register(L, "window_close", [](lstate Lf) -> int {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glua.h"
+#include <array>
 
 template <class T> T load(const ValueRef &);
 template <class T> T load(lstate, const ValueRef &);
@@ -22,6 +23,14 @@ template <> struct Load<double>
     static double structload(lstate L)
     {
         return lua_tonumber(L, -1);
+    }
+};
+
+template <> struct Load<float>
+{
+    static float structload(lstate L)
+    {
+        return (float) load<double>(L);
     }
 };
 
@@ -139,6 +148,26 @@ template <class T> struct Load<std::vector<T>>
             res.push_back(value);
             lua_pop(L, 1);
         }
+        return res;
+    }
+};
+
+template <class T, size_t S> struct Load<std::array<T, S>>
+{
+    static std::array<T, S> structload(lstate L)
+    {
+        std::array<T, S> res;
+
+        lua_pushnil(L);
+        size_t i = 0;
+
+        while (lua_next(L, -2) != 0)
+        {
+            res[i] = load<T>(L);
+            lua_pop(L, 1);
+            i++;
+        }
+
         return res;
     }
 };
